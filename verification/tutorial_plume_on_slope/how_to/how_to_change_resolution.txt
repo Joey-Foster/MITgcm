@@ -1,0 +1,16 @@
+Spatial resolution:
+
+  At COMPILE time:
+  
+  change sNx, Nr in code/SIZE.h
+  
+  At RUNTIME:
+  
+  run gendata.py to produce input/ files with appropriate Nx, Nz values (make sure Nx = sNx*nSx*nPx etc)
+  and change delZ in input/data/&PARAM04
+
+Temporal resolution:
+
+  At RUNTIME:
+  
+  change nTimeSteps in input/data/&PARAM03

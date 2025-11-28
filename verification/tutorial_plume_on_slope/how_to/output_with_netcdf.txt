@@ -1,0 +1,12 @@
+At COMPILE time:
+
+  module load netcdf-c
+  module load netcdf-fortran
+  
+  include "mnc" (without quotes) in code/packages.conf 
+  
+At RUNTIME:
+
+  ensure input/data.pkg contains the line "useMNC=.TRUE.," (without quotes)
+  ensure input/data.mnc exists and contains chosen flags.
+    list of available flags found here https://mitgcm.readthedocs.io/en/latest/outp_pkgs/outp_pkgs.html#pkg-mnc-inputs
