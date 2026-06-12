@@ -59,6 +59,8 @@ C       |-- BBL_INIT_FIXED
 C       |
 C       |-- DWNSLP_INIT_FIXED
 C       |
+C       |-- COST_INIT_FIXED
+C       |
 C       |-- SEAICE_COST_INIT_FIXED
 C       |
 C       |-- SMOOTH_INIT_FIXED
@@ -67,6 +69,8 @@ C       |-- ECCO_INIT_FIXED
 C       |   |- ECCO_COST_INIT_FIXED
 C       |
 C       |-- PROFILES_INIT_FIXED
+C       |
+C       |-- OBSFIT_INIT_FIXED
 C       |
 C       |-- FLT_INIT_FIXED
 C       |
@@ -348,10 +352,16 @@ C--   Initialize fixed arrays for Down-Slope pkg
       ENDIF
 #endif
 
+#ifdef ALLOW_COST
+C--   Initialise cost function.
+# ifdef ALLOW_DEBUG
+      IF (debugMode) CALL DEBUG_CALL('COST_INIT_FIXED',myThid)
+# endif
+      CALL COST_INIT_FIXED( myThid )
+#endif
+
 #ifdef ALLOW_SEAICE
-C--   Initialise ecco-specific cost function.
-C--   This needs to preceed the call CTRL_INIT_FIXED
-C--   in order to provide the weight files
+C--   Initialise seaice-specific cost function.
       IF (useSEAICE) THEN
 # ifdef ALLOW_DEBUG
         IF (debugMode) CALL DEBUG_CALL('SEAICE_COST_INIT_FIXED',myThid)
@@ -378,6 +388,15 @@ C--   provide the weight files.
         IF (debugMode) CALL DEBUG_CALL('PROFILES_INIT_FIXED',myThid)
 # endif
         CALL PROFILES_INIT_FIXED( myThid )
+      ENDIF
+#endif
+
+#ifdef ALLOW_OBSFIT
+      IF (useOBSFIT) THEN
+# ifdef ALLOW_DEBUG
+        IF (debugMode) CALL DEBUG_CALL('OBSFIT_INIT_FIXED',myThid)
+# endif
+        CALL OBSFIT_INIT_FIXED( myThid )
       ENDIF
 #endif
 
