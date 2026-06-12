@@ -1,0 +1,18 @@
+Nx, Ny fixed at 62
+Nr fixed at 15
+
+nTimeSteps = 20 (i.e. endTime = 20*deltaT)
++--------------+---------+
+|              | nSx = 1 |
++--------------+---------+
+| single core  | 5 secs  |
+| mpirun -np 4 | 1 sec   |
++--------------+---------+
+
+nTimeSteps = 5000
++--------------+---------+
+|              | nSx = 1 |
++--------------+---------+
+| single core  | 20 mins |
+| mpirun -np 4 | 57 mins |
++--------------+---------+

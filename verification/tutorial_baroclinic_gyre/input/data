@@ -31,7 +31,8 @@
 # Time stepping parameters
  &PARM03
  startTime=0.,
- endTime=12000.,
+# endTime=24000.,
+ endTime=60000000.,
  deltaT=1200.,
  pChkptFreq=622080000.,
  chkptFreq=155520000.,
