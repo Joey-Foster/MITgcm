@@ -32,6 +32,7 @@
 #- not safe to use globalFiles in multi-processors runs
 #globalFiles=.TRUE.,
  plotLevel=0,
+ staggerTimeStep=.TRUE.,
  &
 
 # Elliptic solver parameters
@@ -45,15 +46,15 @@
 # Time stepping parameters
  &PARM03
  nIter0=0,
- nTimeSteps=20,
-#nTimeSteps=8640,
+#nTimeSteps=20,
+ nTimeSteps=5000,
  deltaT=20.0,
  abEps=0.01,
  pChkptFreq=0.0,
  chkptFreq=0.0,
  dumpFreq=6000.0,
  monitorSelect=2,
- monitorFreq=1.,
+ monitorFreq=600.,
  &
 
 # Gridding parameters
@@ -61,7 +62,7 @@
  usingCartesianGrid=.TRUE.,
  delXfile='dx.bin',
  dYspacing=200.,
- delZ=60*3.33333333333333333333333,
+ delZ=240*3.33333333333333333333333,
  &
 
 # Input datasets

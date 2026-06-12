@@ -1,0 +1,124 @@
+Get compiler version using: mpif77 --version
+/iridisfs/i6software/openmpi/5.0.3/install_gcc14.2/bin/mpif77
+GNU Fortran (GCC) 14.2.0
+Copyright (C) 2024 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+<-- compiler version ----
+
+running: check_fortran_compiler
+ mpif77 -fallow-argument-mismatch -fconvert=big-endian -fimplicit-none -mcmodel=medium -O3 -funroll-loops -c genmake_tcomp.f
+ mpif77 -fallow-argument-mismatch -fconvert=big-endian -fimplicit-none -mcmodel=medium -O3 -funroll-loops -o genmake_tcomp genmake_tcomp.o -L/iridisfs/i6software/netcdf/gcc_15.2/Fortran/lib64 -lnetcdff -lnetcdf
+/iridisfs/i6software/binutils/2.42/install/bin/ld: cannot find -lnetcdf: No such file or directory
+collect2: error: ld returned 1 exit status
+
+ Warning: FORTRAN compiler test fails to link
+ --> set FC_CHECK= 1 /5
+
+running: look_for_makedepend()
+ --> set MAKEDEPEND=$(TOOLSDIR)/xmakedepend
+
+running: check_HAVE_CLOC()
+ running: get_fortran_c_namemangling()
+ /iridisfs/i6software/gcc/14.2.0/install/bin/gcc -O0 -mcmodel=medium -c genmake_test.c
+genmake_test.c: In function ‘tcall’:
+genmake_test.c:1:31: error: implicit declaration of function ‘tsub’ [-Wimplicit-function-declaration]
+    1 | void tcall( char * string ) { tsub( string ); }
+      |                               ^~~~
+
+ WARNING: C test compile fails
+ WARNING: We'll try to use: FC_NAMEMANGLE='#define FC_NAMEMANGLE(X) X ## _'
+ WARNING: Please contact <MITgcm-support@mitgcm.org> if you need help here
+/iridisfs/i6software/gcc/14.2.0/install/bin/gcc -O0 -mcmodel=medium -c genmake_tc_1.c
+mpif77 -fallow-argument-mismatch -fconvert=big-endian -fimplicit-none -mcmodel=medium -o genmake_tc genmake_tc_2.f genmake_tc_1.o
+  HELLO WORLD   1781171784.1462500     
+ --> set HAVE_CLOC='t'
+
+running: check_HAVE_SETRLSTK()
+/iridisfs/i6software/gcc/14.2.0/install/bin/gcc -O0 -mcmodel=medium -c genmake_tc_1.c
+      program hello
+      external setrlstk
+      call setrlstk()
+      end
+mpif77 -fallow-argument-mismatch -fconvert=big-endian -fimplicit-none -mcmodel=medium -o genmake_tc genmake_tc_2.f genmake_tc_1.o
+ --> set HAVE_SETRLSTK='t'
+
+running: check_HAVE_SIGREG()
+/iridisfs/i6software/gcc/14.2.0/install/bin/gcc -O0 -mcmodel=medium -c genmake_tc_1.c
+genmake_tc_1.c:11:44: warning: ‘struct ucontext’ declared inside parameter list will not be visible outside of this definition or declaration
+   11 |     unsigned int sn, siginfo_t  si, struct ucontext *sc )
+      |                                            ^~~~~~~~
+      program hello
+      integer anint
+      common /iv/ anint
+      external sigreg
+      call sigreg(anint)
+      end
+mpif77 -fallow-argument-mismatch -fconvert=big-endian -fimplicit-none -mcmodel=medium -o genmake_tc genmake_tc_2.f genmake_tc_1.o
+ --> set HAVE_SIGREG='t'
+
+running: check_HAVE_STAT()
+/iridisfs/i6software/gcc/14.2.0/install/bin/gcc -O0 -mcmodel=medium -c genmake_tc_1.c
+      program hello
+      integer nbyte
+      call tfsize(nbyte)
+      print *," HELLO WORLD", nbyte
+      end
+mpif77 -fallow-argument-mismatch -fconvert=big-endian -fimplicit-none -mcmodel=medium -o genmake_tc genmake_tc_2.f genmake_tc_1.o
+ --> set HAVE_STAT='t'
+
+running: check_netcdf_libs()
+===  genmake_tnc.F  >>>
+      program fgennc
+#include "netcdf.inc"
+      integer iret, ncid, xid
+      iret = nf_create('genmake_tnc.nc', NF_CLOBBER, ncid)
+      IF (iret .NE. NF_NOERR) write(*,*) NF_STRERROR(iret)
+      iret = nf_def_dim(ncid, 'X', 11, xid)
+      IF (iret .NE. NF_NOERR) write(*,*) NF_STRERROR(iret)
+      iret = nf_close(ncid)
+      IF (iret .NE. NF_NOERR) write(*,*) NF_STRERROR(iret)
+      end
+<<<  genmake_tnc.F  ===
+cat genmake_tnc.F |  cpp -traditional -P -DWORDLENGTH=4 -DNML_TERMINATOR -DALLOW_USE_MPI -DHAVE_SYSTEM -DHAVE_FDATE -DHAVE_ETIME_SBR -DHAVE_CLOC -DHAVE_SETRLSTK -DHAVE_SIGREG -DHAVE_STAT -I/iridisfs/i6software/netcdf/gcc_15.2/Fortran/include -I/iridisfs/i6software/openmpi/5.0.3/install_gcc14.2/include/openmpi
+mpif77  -fallow-argument-mismatch -fconvert=big-endian -fimplicit-none -mcmodel=medium -O3 -funroll-loops -c genmake_tnc.f  \ 
+  &&  mpif77  -fallow-argument-mismatch -fconvert=big-endian -fimplicit-none -mcmodel=medium -O3 -funroll-loops -o genmake_tnc genmake_tnc.o -L/iridisfs/i6software/netcdf/gcc_15.2/Fortran/lib64 -lnetcdff -lnetcdf
+/iridisfs/i6software/binutils/2.42/install/bin/ld: cannot find -lnetcdf: No such file or directory
+collect2: error: ld returned 1 exit status
+
+==> try again with added '-lnetcdf'
+cat genmake_tnc.F |  cpp -traditional -P -DWORDLENGTH=4 -DNML_TERMINATOR -DALLOW_USE_MPI -DHAVE_SYSTEM -DHAVE_FDATE -DHAVE_ETIME_SBR -DHAVE_CLOC -DHAVE_SETRLSTK -DHAVE_SIGREG -DHAVE_STAT -I/iridisfs/i6software/netcdf/gcc_15.2/Fortran/include -I/iridisfs/i6software/openmpi/5.0.3/install_gcc14.2/include/openmpi > genmake_tnc.f \ 
+ &&  mpif77  -fallow-argument-mismatch -fconvert=big-endian -fimplicit-none -mcmodel=medium -O3 -funroll-loops -c genmake_tnc.f \ 
+ &&  mpif77  -fallow-argument-mismatch -fconvert=big-endian -fimplicit-none -mcmodel=medium -O3 -funroll-loops -o genmake_tnc genmake_tnc.o -L/iridisfs/i6software/netcdf/gcc_15.2/Fortran/lib64 -lnetcdff -lnetcdf -lnetcdf
+/iridisfs/i6software/binutils/2.42/install/bin/ld: cannot find -lnetcdf: No such file or directory
+/iridisfs/i6software/binutils/2.42/install/bin/ld: cannot find -lnetcdf: No such file or directory
+collect2: error: ld returned 1 exit status
+
+==> try again with added '-lnetcdff -lnetcdf'
+cat genmake_tnc.F |  cpp -traditional -P -DWORDLENGTH=4 -DNML_TERMINATOR -DALLOW_USE_MPI -DHAVE_SYSTEM -DHAVE_FDATE -DHAVE_ETIME_SBR -DHAVE_CLOC -DHAVE_SETRLSTK -DHAVE_SIGREG -DHAVE_STAT -I/iridisfs/i6software/netcdf/gcc_15.2/Fortran/include -I/iridisfs/i6software/openmpi/5.0.3/install_gcc14.2/include/openmpi > genmake_tnc.f \ 
+ &&  mpif77  -fallow-argument-mismatch -fconvert=big-endian -fimplicit-none -mcmodel=medium -O3 -funroll-loops -c genmake_tnc.f \ 
+ &&  mpif77  -fallow-argument-mismatch -fconvert=big-endian -fimplicit-none -mcmodel=medium -O3 -funroll-loops -o genmake_tnc genmake_tnc.o -L/iridisfs/i6software/netcdf/gcc_15.2/Fortran/lib64 -lnetcdff -lnetcdf -lnetcdff -lnetcdf
+/iridisfs/i6software/binutils/2.42/install/bin/ld: cannot find -lnetcdf: No such file or directory
+/iridisfs/i6software/binutils/2.42/install/bin/ld: cannot find -lnetcdf: No such file or directory
+collect2: error: ld returned 1 exit status
+ --> set HAVE_NETCDF=''
+
+running: check_HAVE_FLUSH()
+===  genmake_tflsh.f  >>>
+      program fgenflsh
+      integer iounit
+      character*9 fname
+      iounit = 26
+      fname = 'tmp.tflsh'
+      open(iounit,FILE=fname,STATUS='unknown')
+      write(iounit,*) 'genmake_tflsh: hello'
+      call flush(iounit)
+      close(iounit)
+      end
+<<<  genmake_tflsh.f  ===
+mpif77  -fallow-argument-mismatch -fconvert=big-endian -fimplicit-none -mcmodel=medium -O3 -funroll-loops -c genmake_tflsh.f  \ 
+  &&  mpif77  -fallow-argument-mismatch -fconvert=big-endian -fimplicit-none -mcmodel=medium -O3 -funroll-loops -o genmake_tflsh.o -L/iridisfs/i6software/netcdf/gcc_15.2/Fortran/lib64 -lnetcdff -lnetcdf
+/iridisfs/i6software/binutils/2.42/install/bin/ld: cannot find -lnetcdf: No such file or directory
+collect2: error: ld returned 1 exit status
+ --> set HAVE_FLUSH='f'
