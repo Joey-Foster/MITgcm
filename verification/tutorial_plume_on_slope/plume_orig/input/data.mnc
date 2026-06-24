@@ -1,0 +1,9 @@
+# pkg/mnc inputs
+ &MNC_01
+ monitor_mnc=.FALSE.,
+ autodiff_mnc=.FALSE.,
+ mnc_use_outdir=.TRUE.,
+ mnc_filefreq=600,
+ /
+
+

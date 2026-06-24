@@ -1,0 +1,1 @@
+/home/jlf1g19/mitgcm/MITgcm//pkg/debug/write_fullarray_rl.F

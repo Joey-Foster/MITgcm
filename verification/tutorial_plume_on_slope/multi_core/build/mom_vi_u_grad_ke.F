@@ -1,0 +1,1 @@
+/home/jlf1g19/mitgcm/MITgcm//pkg/mom_vecinv/mom_vi_u_grad_ke.F

@@ -1,0 +1,1 @@
+/home/jlf1g19/mitgcm/MITgcm//pkg/mom_common/mom_w_smag_3d.F

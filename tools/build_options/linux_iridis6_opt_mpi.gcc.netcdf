@@ -1,0 +1,159 @@
+#!/bin/bash
+#
+# Composed and tested by Jeff Blundell on the
+# University of Southampton HPC system "Iridis6"
+# Compilation Node Hardware: 2 x AMD EPYC 9334 32-Core Processor 2.7 GHz
+# Compute Node Hardware: 2 x AMD EPYC 9654 96-Core Processor 2.4 GHz
+# OS: Red Hat Enterprise Linux release 8.8 (Ootpa)
+# Derived originally from linux_amd64_ifort = linux_amd64_ifort11
+# in MITgcm/tools/build_options downloaded in 15th June 2023.
+# Developed and tested using the module intel-compilers/2022.2.0.classic
+# the version of Intel's oneAPI compiler suite used to build the
+# HDF5 and netCDF4 C licbraries provided as system modules
+#
+# Use -xHost code generation, since the compilation (login)
+# and compute nodes have exactly the same processor chips
+#
+# a) Processor specific flags:
+#    1) for more speed on Core2 processors replace -xW with -xT
+#    2) for more speed on Pentium4 based EM64T processors replaces -xW with -xP
+# b) For more speed, provided your data size doesn't exceed 2GB you can
+# remove -fPIC which carries a performance penalty of 2-6%.
+# c) Provided that the libraries you link to are compiled with -fPIC this
+# optfile should work.
+# d) You can replace -fPIC with -mcmodel=medium which may perform faster
+# then -fPIC and still support data sizes over 2GB per process but all
+# the libraries you link to myst be compiled with -fPIC or -mcmodel=medium
+# e) Changed from -O3 to -O2 to avoid buggy Intel v.10 compilers. Speed
+# impact appears to be minimal.
+# This version is intended to implement MPI parallelism.
+#
+#  Author of original version: Constantinos Evangelinos
+
+# ==> DON'T FORGET to set environment variable MPI_INC_DIR to the include
+#     directory of your MPI implementation
+
+#-------
+# run with OpenMP: needs to set environment var. OMP_NUM_THREADS
+#    and generally, needs to increase the stack-size:
+#   -  sh,bash:
+#     > export OMP_NUM_THREADS=2
+#     > export KMP_STACKSIZE=400m
+#   - csh,tcsh:
+#     > setenv OMP_NUM_THREADS 2
+#     > setenv KMP_STACKSIZE 400m
+#  NOTE, MPI+OpenMP: might need to set KMP_STACKSIZE in ~/.tcshrc
+#        (but curiously, works without OMP_NUM_THREADS in ~/.tcshrc).
+#-------
+
+# CC=${CC:=mpicc}
+# Note that loading the latest Intel compiler module also loads gcc,
+# which assigns the value gcc to CC, so we need to override that.
+CC=mpicc
+FC=${FC:=mpif77}
+F90C=${F90C:=mpif90}
+LINK="$F90C"
+
+DEFINES='-DWORDLENGTH=4'
+F90FIXEDFORMAT='-fixed -Tf'
+EXTENDED_SRC_FLAG='-132'
+GET_FC_VERSION="--version"
+OMPFLAG='-openmp'
+
+NOOPTFLAGS='-O0 -g'
+NOOPTFILES=''
+
+#- for setting specific options, check compiler version:
+fcVers=`$FC $GET_FC_VERSION | head -n 1 | awk '{print $NF}'`
+if ! [[ $fcVers =~ ^[0-9]+$ ]] ; then
+  echo "    un-recognized Compiler-release '$fcVers' ; ignored (-> set to 0)" ; fcVers=0 ;
+else echo "    get Compiler-release: '$fcVers'" ; fi
+if [ $fcVers -ge 20160301 ] ; then
+    OMPFLAG='-qopenmp'
+fi
+
+if test "x$GENERIC" != x ; then
+    PROCF=-axSSE4.2,SSE4.1,SSSE3,SSE3,SSE2
+else
+    PROCF=-march=znver4	
+fi
+
+# In principle, would prefer a purely little-endian binary environment,
+# but verification cases often come with (big-endian) binary data files,
+# so removal -convert big_endian flag from FFLAGS is a bad idea,
+# unless all provided binary data files could be easily converted.
+
+CFLAGS="-std=c90 -O0 -m64 $PROCF"
+#underflow, inexact and denormal are also available as floating-point exceptions
+FFLAGS="$FFLAGS -m64 -fconvert=big-endian -ffpe-summary=invalid,zero,overflow"
+#- for big setups, compile & link with "-fPIC" or set memory-model to "medium":
+#CFLAGS="$CFLAGS -fPIC"
+#FFLAGS="$FFLAGS -fPIC"
+#-  with FC 19, need to use this without -fPIC (which cancels -mcmodel option):
+ CFLAGS="$CFLAGS -mcmodel=medium"
+ FFLAGS="$FFLAGS -mcmodel=medium"
+#- might want to use '-r8' for fizhi pkg:
+#FFLAGS="$FFLAGS -r8"
+
+if test "x$IEEE" = x ; then     #- with optimisation:
+    #FOPTIM="-O2 -align -fp-model source $PROCF"
+#    FOPTIM="-O3 -funroll-loops -fexcess-precision=standard $PROCF"
+    FOPTIM="-O2 -funroll-loops -fallow-argument-mismatch $PROCF"
+else
+  if test "x$DEVEL" = x ; then  #- no optimisation + IEEE :
+    FOPTIM="-O0 -fp-model source -noalign $PROCF"
+  else                          #- development/check options:
+   #FFLAGS="$FFLAGS -debug all -debug-parameters all -fp-model strict"
+    FOPTIM="-O0 -noalign -g -traceback $PROCF"
+    NOOPTFLAGS=$FOPTIM
+    NOOPTFILES='adread_adwrite.F'
+    FOPTIM="$FOPTIM -warn all -warn nounused"
+    FOPTIM="$FOPTIM -fpe0 -ftz -fp-stack-check -check all -ftrapuv"
+  fi
+fi
+
+F90FLAGS=$FFLAGS
+F90OPTIM=$FOPTIM
+
+INCLUDEDIRS=''
+INCLUDES=''
+LIBS=''
+
+# Eliminate generic search for NetCDF4/HDF5, as we will use our own versions
+# Use single thread versions build with the same compiler suite and -xHost architecture
+# Old version seemed to be implictly netCDF3, thus no dependence on HDF5
+# N.B. need doubles quotes for substitutions to work correctly
+#JEFF_PACKAGES=/home/jrb1/packages
+#HDF5_DIR=${HDF5_ROOT}
+#NCF4_DIR=${NETCDF_C_LIB_DIR}64
+#NCFF_DIR=${JEFF_PACKAGES}/netcdf4/netcdf-fortran-4.6.1/intel2022.2.0/xHost/single
+
+#correct location of netcdf-c libraries (error in module scripts) (CURRENTLY WRONG)
+#CORRECT_NetCDF_INC_DIR=/iridisfs/i6software/netcdf/gcc_15.2/Fortran/include
+#CORRECT_NetCDF_LIB_DIR=/iridisfs/i6software/netcdf/gcc_15.2/Fortran/lib
+
+#NETCDF_C_LIB_DIR=/iridisfs/i6software/netcdf/gcc_15.2/C/lib64
+
+#INCLUDEDIRS="${CORRECT_NetCDF_INCLUDE_DIR} ${NETCDF_C_INC_DIR} ${HDF5_INC_DIR}"
+#INCLUDES="-I${CORRECT_NetCDF_INCLUDE_DIR} -I${NETCDF_C_INC_DIR} -I${HDF5_INC_DIR} -I/usr/include"
+#LIBS="-L${CORRECT_NetCDF_LIB_DIR} -lnetcdff -L${NETCDF_C_LIB_DIR} -lnetcdf -L${HDF5_LIB_DIR} -lhdf5_hl -lhdf5hl_fortran -lhdf5 -lhdf5_fortran -lz -lm"
+
+#correct location of netcdf-c libraries (error in module scripts) (to be edited)
+#CORRECT_NETCDF_C_INC_DIR = /iridisfs/i6software/netcdf/Fortran/4.6.2_consistent/install/include
+#CORRECT_NETCDF_C_LIB_DIR = /iridisfs/i6software/netcdf/Fortran/4.6.2_consistent/install/lib64
+
+NETCDF_C_LIB_DIR64=/iridisfs/i6software/netcdf/gcc_15.2/C/lib64
+
+INCLUDEDIRS="${NetCDF_INCLUDE_DIR} ${NETCDF_C_INC_DIR} ${HDF5_INC_DIR}"
+INCLUDES="-I${NetCDF_INCLUDE_DIR} -I${NETCDF_C_INC_DIR} -I${HDF5_INC_DIR} -I/usr/include"
+LIBS="-L${NetCDF_LIBRARY}64 -lnetcdff -L${NETCDF_C_LIB_DIR64} -lnetcdf -L${HDF5_LIB_DIR} -lhdf5_hl -lhdf5hl_fortran -lhdf5 -lhdf5_fortran -lz -lm"
+
+LD_LIBRARY_PATH="${NetCDF_LIBRARY}64:$LD_LIBRARY_PATH"
+
+if [ -n "$MPI_INC_DIR" -a "x$MPI" = xtrue ] ; then
+    INCLUDES="$INCLUDES -I$MPI_INC_DIR"
+    INCLUDEDIRS="$INCLUDEDIRS $MPI_INC_DIR"
+    #- used for parallel (MPI) DIVA
+    MPIINCLUDEDIR="$MPI_INC_DIR"
+   #MPI_HEADER_FILES='mpif.h mpiof.h'
+fi

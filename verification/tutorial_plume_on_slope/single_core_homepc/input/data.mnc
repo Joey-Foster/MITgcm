@@ -1,0 +1,6 @@
+# pkg/mnc inputs
+ &MNC_01
+ monitor_mnc=.FALSE.,
+ mnc_use_outdir=.TRUE.,
+ &
+
