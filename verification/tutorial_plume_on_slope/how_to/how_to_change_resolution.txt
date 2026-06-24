@@ -14,3 +14,4 @@ Temporal resolution:
   At RUNTIME:
   
   change nTimeSteps in input/data/&PARAM03
+  change deltaT in input/data/&PARAM03 to abide by CFL

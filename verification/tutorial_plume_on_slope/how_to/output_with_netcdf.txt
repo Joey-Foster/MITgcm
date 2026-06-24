@@ -10,3 +10,8 @@ At RUNTIME:
   ensure input/data.pkg contains the line "useMNC=.TRUE.," (without quotes)
   ensure input/data.mnc exists and contains chosen flags.
     list of available flags found here https://mitgcm.readthedocs.io/en/latest/outp_pkgs/outp_pkgs.html#pkg-mnc-inputs
+    
+  Output frequency control:
+    monitorFreq is in SECONDS (= nTimeSteps*deltaT) - controls output of prognostic variable monitoring for debugging
+    dumpFreq is in SECONDS - controls output of writing all variables
+    mnc_filefreq is in SECONDS - contols when a .nc file should split

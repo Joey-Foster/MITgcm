@@ -2,4 +2,5 @@
  &PACKAGES
  useOBCS=.TRUE.,
  useMNC=.TRUE.,
- &
+ /
+

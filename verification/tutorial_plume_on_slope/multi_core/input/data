@@ -32,8 +32,8 @@
 #- not safe to use globalFiles in multi-processors runs
 #globalFiles=.TRUE.,
  plotLevel=0,
- staggerTimeStep=.TRUE.,
- &
+#staggerTimeStep=.TRUE.,
+ /
 
 # Elliptic solver parameters
  &PARM02
@@ -41,29 +41,31 @@
  cg2dTargetResidual=1.E-13,
  cg3dMaxIters=20,
  cg3dTargetResidual=1.E-8,
- &
+ /
 
 # Time stepping parameters
  &PARM03
  nIter0=0,
 #nTimeSteps=20,
  nTimeSteps=5000,
- deltaT=20.0,
+ deltaT=5.0,
  abEps=0.01,
  pChkptFreq=0.0,
  chkptFreq=0.0,
- dumpFreq=6000.0,
+#dumpFreq=5.0,
+ dumpFreq=500.0,
  monitorSelect=2,
- monitorFreq=600.,
- &
+#monitorFreq=5.,
+ monitorFreq=5000.,
+ /
 
 # Gridding parameters
  &PARM04
  usingCartesianGrid=.TRUE.,
  delXfile='dx.bin',
  dYspacing=200.,
- delZ=240*3.33333333333333333333333,
- &
+ delZ=240*0.8333333333,
+ /
 
 # Input datasets
  &PARM05
@@ -73,4 +75,6 @@
 #hydrogThetaFile='T.pickup',
 #uVelInitFile   ='U.pickup',
 #pSurfInitFile  ='Eta.pickup',
- &
+ /
+
+
