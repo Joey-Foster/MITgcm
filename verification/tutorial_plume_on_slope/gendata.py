@@ -108,10 +108,13 @@ hdiff = dmax + H
 xwidth = hdiff / (2.0 * slope)
 
 d = np.zeros((nx, ny), dtype=np.float64)
+pert = np.zeros((nx, ny), dtype=np.float64)
 for i in range(nx):
     for j in range(ny):
         # d[i, j] = hdiff/2 * (np.exp((x[i]-offset)/xwidth) - np.exp(-(x[i]-offset)/xwidth)) / (np.exp((x[i]-offset)/xwidth) + np.exp(-(x[i]-offset)/xwidth)) + hdiff/2 - H
-        d[i, j] = hdiff / 2 * (np.tanh((Lx - x[i] - offset) / xwidth) + 1) - H
+        # d[i, j] = hdiff / 2 * (np.tanh((Lx - x[i] - offset) / xwidth) + 1) - H
+        pert[i,j] = offset/xwidth * np.sin(np.pi/xwidth * x[i])+9
+        d[i, j] = hdiff / 2 * (np.tanh((Lx - x[i] - offset) / xwidth) + 1) - H + pert[i,j]
 
 d[0, :] = 0.0
 
