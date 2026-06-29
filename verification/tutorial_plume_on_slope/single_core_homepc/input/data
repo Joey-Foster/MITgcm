@@ -47,12 +47,12 @@
  &PARM03
  nIter0=0,
 #nTimeSteps=20,
- nTimeSteps=5000,
+ nTimeSteps=4320,
  deltaT=20.0,
  abEps=0.01,
  pChkptFreq=0.0,
  chkptFreq=0.0,
- dumpFreq=6000.0,
+ dumpFreq=600.0,
  monitorSelect=2,
  monitorFreq=600.,
  &
@@ -62,7 +62,7 @@
  usingCartesianGrid=.TRUE.,
  delXfile='dx.bin',
  dYspacing=200.,
- delZ=240*3.33333333333333333333333,
+ delZ=60*3.33333333333333333333333,
  &
 
 # Input datasets

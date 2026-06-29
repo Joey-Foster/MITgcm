@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd ../run
+cd run
 ln -s ../input/* .
 cp ../build/mitgcmuv .
-./mitgcmuv > output.txt
+time ./mitgcmuv > output.txt
