@@ -1,1 +1,0 @@
-/home/jlf1g19/mitgcm/MITgcm//eesupp/src/exch_rs_recv_get_x.F

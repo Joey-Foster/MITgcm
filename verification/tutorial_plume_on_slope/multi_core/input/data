@@ -47,7 +47,7 @@
  &PARM03
  nIter0=0,
 #nTimeSteps=20,
- nTimeSteps=5000,
+ nTimeSteps=16560,
  deltaT=5.0,
  abEps=0.01,
  pChkptFreq=0.0,

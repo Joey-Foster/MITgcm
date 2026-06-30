@@ -1,1 +1,0 @@
-/home/jlf1g19/mitgcm/MITgcm//eesupp/src/exch_s3d_rs.F

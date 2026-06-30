@@ -1,1 +1,0 @@
-/home/jlf1g19/mitgcm/MITgcm//pkg/rw/get_write_global_fld.F

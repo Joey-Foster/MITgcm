@@ -1,1 +1,0 @@
-/home/jlf1g19/mitgcm/MITgcm//eesupp/src/eeboot_minimal.F

@@ -1,1 +1,0 @@
-/home/jlf1g19/mitgcm/MITgcm//eesupp/src/nml_set_terminator.F

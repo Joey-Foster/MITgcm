@@ -1,1 +1,0 @@
-/home/jlf1g19/mitgcm/MITgcm//model/src/cg2d_ex0.F

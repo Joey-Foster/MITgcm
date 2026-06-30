@@ -1,1 +1,0 @@
-/home/jlf1g19/mitgcm/MITgcm//model/src/diags_sound_speed.F

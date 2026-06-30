@@ -1,1 +1,0 @@
-/home/jlf1g19/mitgcm/MITgcm//eesupp/src/global_sum_singlecpu.F

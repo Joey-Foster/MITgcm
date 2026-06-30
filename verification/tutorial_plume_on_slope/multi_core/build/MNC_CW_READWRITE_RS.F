@@ -1,1 +1,0 @@
-/home/jlf1g19/mitgcm/MITgcm//pkg/mnc/MNC_CW_READWRITE_RS.F

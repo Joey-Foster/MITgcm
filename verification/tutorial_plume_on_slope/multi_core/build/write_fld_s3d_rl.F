@@ -1,1 +1,0 @@
-/home/jlf1g19/mitgcm/MITgcm//pkg/rw/write_fld_s3d_rl.F

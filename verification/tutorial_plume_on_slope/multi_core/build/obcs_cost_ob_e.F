@@ -1,1 +1,0 @@
-/home/jlf1g19/mitgcm/MITgcm//pkg/obcs/obcs_cost_ob_e.F

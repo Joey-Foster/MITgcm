@@ -1,1 +1,0 @@
-/home/jlf1g19/mitgcm/MITgcm//pkg/generic_advdiff/gad_os7mp_adv_x.F

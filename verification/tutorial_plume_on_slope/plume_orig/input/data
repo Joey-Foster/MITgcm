@@ -45,15 +45,15 @@
 # Time stepping parameters
  &PARM03
  nIter0=0,
- nTimeSteps=20,
-#nTimeSteps=8640,
+#nTimeSteps=20,
+ nTimeSteps=4140,
  deltaT=20.0,
  abEps=0.01,
  pChkptFreq=0.0,
  chkptFreq=0.0,
- dumpFreq=6000.0,
+ dumpFreq=600.0,
  monitorSelect=2,
- monitorFreq=1.,
+ monitorFreq=600.,
  /
 
 # Gridding parameters
