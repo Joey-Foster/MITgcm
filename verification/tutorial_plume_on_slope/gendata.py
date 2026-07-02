@@ -14,9 +14,9 @@ def write_binary(path, array):
         np.asarray(array, dtype=prec).ravel(order='F').tofile(fid)
 
 # Dimensions of grid
-nx = 320
+nx = 1280
 ny = 1
-nz = 60
+nz = 240
 
 # Nominal depth of model (meters)
 H = 200.0
@@ -109,11 +109,14 @@ xwidth = hdiff / (2.0 * slope)
 
 d = np.zeros((nx, ny), dtype=np.float64)
 pert = np.zeros((nx, ny), dtype=np.float64)
+epsilon = np.zeros((nx,), dtype=np.float64)
+delta = 1 #subgrid lengthscale
 for i in range(nx):
     for j in range(ny):
         # d[i, j] = hdiff/2 * (np.exp((x[i]-offset)/xwidth) - np.exp(-(x[i]-offset)/xwidth)) / (np.exp((x[i]-offset)/xwidth) + np.exp(-(x[i]-offset)/xwidth)) + hdiff/2 - H
         # d[i, j] = hdiff / 2 * (np.tanh((Lx - x[i] - offset) / xwidth) + 1) - H
-        pert[i,j] = offset/xwidth * np.sin(np.pi/xwidth * x[i])+9
+        epsilon[i] = delta/dx[i]
+        pert[i,j] = epsilon[i] * np.sin(2*np.pi*x[i] / epsilon[i])
         d[i, j] = hdiff / 2 * (np.tanh((Lx - x[i] - offset) / xwidth) + 1) - H + pert[i,j]
 
 d[0, :] = 0.0
@@ -135,6 +138,7 @@ plt.show()
 write_binary('dx.bin', dx)
 
 print(f"dx range: {np.min(dx):.6f} to {np.max(dx):.6f} m")
-print(f"Temperature range: {np.min(T):.6f} to {np.max(T):.6f}")
+print(f"epsilon range: {np.min(epsilon):.6f} to {np.max(epsilon):.6f}")
+print(f"Temperature range: {np.min(T):.6f} to {np.max(T):.6f} degC")
 print(f"Bathymetry range: {np.min(d):.6f} to {np.max(d):.6f} m")
 print(f"Q forcing range: {np.min(Q):.6f} to {np.max(Q):.6f}")
