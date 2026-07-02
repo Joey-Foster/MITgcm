@@ -20,7 +20,8 @@ if [[ -z "$directory" ]]; then
   exit 1
 fi
 
+pwd
 echo "Creating directory: scratch/jlf1g19/$directory"
 mkdir ~/../../scratch/jlf1g19/"$directory"
-echo "Moving contents of run/"
 mv run/* $_
+echo "Moved contents of run/"
