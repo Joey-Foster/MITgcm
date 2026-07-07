@@ -9,7 +9,7 @@ PATH_TO_NC = 'run/state_global.nc'
 
 ds = xr.open_dataset(PATH_TO_NC, chunks={})
 
-theta = ds['Temp'].sel(X=slice(0,4000))
+theta = ds['Temp'].sel(X=slice(0,3000))
 time = ds['T']
 
 frames = []
@@ -18,11 +18,11 @@ for i, t in enumerate(time.values):
     theta.isel(T=i).plot(
         cbar_kwargs={'label':r'$\theta$ [degC]'},
         cmap = 'jet',
-        vmin = -0.075,
+        vmin = -0.08,
         vmax = 0.005
         )
     plt.title(f'Potential temperature at t={int(t)}s')
-    plt.xlabel('X [km]')
+    plt.xlabel('X [m]')
     plt.ylabel('Depth [m]')
     
     buf = io.BytesIO()
@@ -32,4 +32,4 @@ for i, t in enumerate(time.values):
     frames.append(iio.imread(buf))
     plt.close()
     
-iio.imwrite('animation.gif', frames, fps=30, loop=0)
+iio.imwrite('animation.gif', frames, fps=20, loop=0)

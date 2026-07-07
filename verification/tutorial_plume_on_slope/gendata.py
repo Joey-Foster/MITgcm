@@ -18,6 +18,9 @@ nx = 1280
 ny = 1
 nz = 240
 
+# Multiscale toggle
+is_multiscale = False
+
 # Nominal depth of model (meters)
 H = 200.0
 
@@ -114,15 +117,22 @@ delta = 1 #subgrid lengthscale
 for i in range(nx):
     for j in range(ny):
         # d[i, j] = hdiff/2 * (np.exp((x[i]-offset)/xwidth) - np.exp(-(x[i]-offset)/xwidth)) / (np.exp((x[i]-offset)/xwidth) + np.exp(-(x[i]-offset)/xwidth)) + hdiff/2 - H
-        # d[i, j] = hdiff / 2 * (np.tanh((Lx - x[i] - offset) / xwidth) + 1) - H
-        epsilon[i] = delta/dx[i]
-        pert[i,j] = epsilon[i] * np.sin(2*np.pi*x[i] / epsilon[i])
-        d[i, j] = hdiff / 2 * (np.tanh((Lx - x[i] - offset) / xwidth) + 1) - H + pert[i,j]
+        
+        if not is_multiscale:
+            d[i, j] = hdiff / 2 * (np.tanh((Lx - x[i] - offset) / xwidth) + 1) - H
+        else:
+            epsilon[i] = delta/dx[i]
+            pert[i,j] = epsilon[i] * np.sin(2*np.pi*x[i] / epsilon[i])
+            d[i, j] = hdiff / 2 * (np.tanh((Lx - x[i] - offset) / xwidth) + 1) - H + pert[i,j]
 
 d[0, :] = 0.0
 
 # Write topography file
 write_binary('topog.slope', d)
+
+with open('is_multiscale.txt', 'w') as file:
+    file.write('# Reminder file saved with input data generation script\n')
+    file.write(f'{is_multiscale=}')
 
 # Plot the bathymetry
 plt.figure()
