@@ -18,9 +18,6 @@ nx = 1280
 ny = 1
 nz = 240
 
-# Multiscale toggle
-is_multiscale = False
-
 # Nominal depth of model (meters)
 H = 200.0
 
@@ -113,7 +110,12 @@ xwidth = hdiff / (2.0 * slope)
 d = np.zeros((nx, ny), dtype=np.float64)
 pert = np.zeros((nx, ny), dtype=np.float64)
 epsilon = np.zeros((nx,), dtype=np.float64)
-delta = 1 #subgrid lengthscale
+
+# Multiscale toggle
+is_multiscale = False
+# subgrid lengthscale
+delta = 1 
+
 for i in range(nx):
     for j in range(ny):
         # d[i, j] = hdiff/2 * (np.exp((x[i]-offset)/xwidth) - np.exp(-(x[i]-offset)/xwidth)) / (np.exp((x[i]-offset)/xwidth) + np.exp(-(x[i]-offset)/xwidth)) + hdiff/2 - H
@@ -148,7 +150,8 @@ plt.show()
 write_binary('dx.bin', dx)
 
 print(f"dx range: {np.min(dx):.6f} to {np.max(dx):.6f} m")
-print(f"epsilon range: {np.min(epsilon):.6f} to {np.max(epsilon):.6f}")
+if is_multiscale:
+    print(f"epsilon range: {np.min(epsilon):.6f} to {np.max(epsilon):.6f}")
 print(f"Temperature range: {np.min(T):.6f} to {np.max(T):.6f} degC")
 print(f"Bathymetry range: {np.min(d):.6f} to {np.max(d):.6f} m")
 print(f"Q forcing range: {np.min(Q):.6f} to {np.max(Q):.6f}")

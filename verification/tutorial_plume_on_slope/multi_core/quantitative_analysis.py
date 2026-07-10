@@ -6,12 +6,6 @@ import matplotlib.pyplot as plt
 import argparse
 from tqdm import tqdm
 
-parser = argparse.ArgumentParser()
-parser.add_argument('-d', help="Path to .nc file", required=True)
-args=parser.parse_args()
-
-ds = xr.open_dataset(args.d, chunks={})
-
 def basic_plot(ds, time_idx):
     "For debugging - does not save output"
     
@@ -45,6 +39,7 @@ def plot_tempertature_flux(ds, X_pos):
     plt.ylabel(r'Temperature flux [degC m$^2$ s$^{-1}$]')
     plt.title(f'Temperature flux through X={X_pos}')
     plt.show()
+    plt.savefig(f'Temperature_flux_x={X_pos}.pdf', bbox_inches='tight')
 
 
 def closest_index(arr, x):
@@ -94,9 +89,9 @@ def temperature_flux_divergence(ds, time_idx):
     flux_divergence = flux_density_x.differentiate('X') + flux_density_z.differentiate('Z')
     return flux_divergence
 
-def plot_flux_divergence(ds, time_idx):
+def plot_flux_divergence(ds, time_idx, savefig=False):
     plt.figure()
-    div = temperature_flux_divergence(ds, i)
+    div = temperature_flux_divergence(ds, time_idx)
     logged = np.log10(np.abs(div) + 1e-16)
     logged.plot(
         cbar_kwargs={'label':r'$\log_{10}\left|\nabla \cdot (\mathbf{u}\theta)\right|$'},
@@ -108,7 +103,28 @@ def plot_flux_divergence(ds, time_idx):
     plt.xlabel('X [m]')
     plt.ylabel('Depth [m]')
     plt.show()
+    if savefig:
+        plt.savefig(f"flux_divergence_t={ds['T'].values[time_idx]}")
 
 
-for i in range(len(ds['T'].values)):
-   plot_flux_divergence(ds, i)
+if __name__ == "__main__":
+    
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-d', help="Path to .nc file", required=True)
+    parser.add_argument('-f', '--flux', help='Save temperature flux figure', action='store_true')
+    parser.add_argument('-hc', '--heat', help='Save heat content figure', action='store_true')
+    parser.add_argument('--div', help='Save flux divergence at final time', action='store_true')
+    args=parser.parse_args()
+
+    ds = xr.open_dataset(args.d, chunks={})
+    
+    if args.flux:
+        plot_tempertature_flux(ds, 500)
+    if args.heat:
+        plot_heat_content(ds, 500)
+    if args.div:
+        plot_flux_divergence(ds, -1, savefig=True)
+    
+    # for i in range(len(ds['T'].values)):
+        # basic_plot(ds, i)
+        # plot_flux_divergence(ds, i)
