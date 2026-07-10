@@ -21,7 +21,6 @@ if [[ -z "$directory" ]]; then
 fi
 
 pwd
-echo "Creating directory: scratch/jlf1g19/$directory"
+echo "Creating directory scratch/jlf1g19/$directory and moving the contents of run/ there"
 mkdir ~/../../scratch/jlf1g19/"$directory"
 mv run/* $_
-echo "Moved contents of run/"
