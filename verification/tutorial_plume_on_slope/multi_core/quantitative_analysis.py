@@ -38,7 +38,6 @@ def plot_tempertature_flux(ds, X_pos):
     plt.xlabel('Time [s]')
     plt.ylabel(r'Temperature flux [degC m$^2$ s$^{-1}$]')
     plt.title(f'Temperature flux through X={X_pos}')
-    plt.show()
     plt.savefig(f'Temperature_flux_x={X_pos}.pdf', bbox_inches='tight')
 
 
@@ -74,7 +73,6 @@ def plot_heat_content(ds, X_pos):
     plt.xlabel('Time [s]')
     plt.ylabel(r'Heat content [J s$^{-1}$]')
     plt.title(f'Heat content east of X={X_pos}')
-    plt.show()
     plt.savefig('eastward_heat_content.pdf', bbox_inches='tight')
     
 def temperature_flux_divergence(ds, time_idx):
@@ -102,9 +100,8 @@ def plot_flux_divergence(ds, time_idx, savefig=False):
     plt.title(f"Log of the divergence of tempertature flux at t = {ds['T'].values[time_idx]}")
     plt.xlabel('X [m]')
     plt.ylabel('Depth [m]')
-    plt.show()
     if savefig:
-        plt.savefig(f"flux_divergence_t={ds['T'].values[time_idx]}")
+        plt.savefig(f"flux_divergence_t={ds['T'].values[time_idx]}.pdf", bbox_inches='tight')
 
 
 if __name__ == "__main__":
