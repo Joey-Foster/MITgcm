@@ -75,11 +75,13 @@ def plot_heat_content(ds, X_pos):
     plt.title(f'Heat content east of X={X_pos}')
     plt.savefig('eastward_heat_content.pdf', bbox_inches='tight')
     
-def temperature_flux_divergence(ds, time_idx):
+def temperature_flux_divergence(ds, time_idx, X_range=(None, None), Z_range=(None, None)):
     
     theta = ds['Temp'].isel(T=time_idx)
     u = ds['U'].isel(T=time_idx).interp(Xp1=ds['Temp'].X)
     w = ds['W'].isel(T=time_idx).interp(Zl=ds['Temp'].Z)
+        
+    theta, u, w = [ds.sel(X=slice(*X_range), Z=slice(*Z_range)) for ds in [theta, u, w]] 
     
     flux_density_x = u*theta
     flux_density_z = w*theta
@@ -87,9 +89,9 @@ def temperature_flux_divergence(ds, time_idx):
     flux_divergence = flux_density_x.differentiate('X') + flux_density_z.differentiate('Z')
     return flux_divergence
 
-def plot_flux_divergence(ds, time_idx, savefig=False):
+def plot_flux_divergence(ds, time_idx, X_range=(None, None), Z_range=(None, None), savefig=False):
     plt.figure()
-    div = temperature_flux_divergence(ds, time_idx)
+    div = temperature_flux_divergence(ds, time_idx, X_range, Z_range)
     logged = np.log10(np.abs(div) + 1e-16)
     logged.plot(
         cbar_kwargs={'label':r'$\log_{10}\left|\nabla \cdot (\mathbf{u}\theta)\right|$'},
@@ -97,20 +99,24 @@ def plot_flux_divergence(ds, time_idx, savefig=False):
         vmin = logged.min().values,
         vmax = logged.max().values
         )
-    plt.title(f"Log of the divergence of tempertature flux at t = {ds['T'].values[time_idx]}")
+    plt.title(f"Log divergence of tempertature flux at t = {int(ds['T'].values[time_idx])}")
     plt.xlabel('X [m]')
     plt.ylabel('Depth [m]')
     if savefig:
         plt.savefig(f"flux_divergence_t={ds['T'].values[time_idx]}.pdf", bbox_inches='tight')
 
 
+
 if __name__ == "__main__":
     
     parser = argparse.ArgumentParser()
-    parser.add_argument('-d', help="Path to .nc file", required=True)
+    parser.add_argument('-d', help="Path to .nc file", required=True, metavar='path/to/file')
     parser.add_argument('-f', '--flux', help='Save temperature flux figure', action='store_true')
     parser.add_argument('-hc', '--heat', help='Save heat content figure', action='store_true')
     parser.add_argument('--div', help='Save flux divergence at final time', action='store_true')
+    parser.add_argument("--div-loc", help="Save localised flux divergence at final time "
+                        "by providing 4 floats", nargs=4, type=float, 
+                        metavar=("X_start", "X_end", "Z_start", "Z_end"))
     args=parser.parse_args()
 
     ds = xr.open_dataset(args.d, chunks={})
@@ -121,7 +127,10 @@ if __name__ == "__main__":
         plot_heat_content(ds, 500)
     if args.div:
         plot_flux_divergence(ds, -1, savefig=True)
-    
+    if args.div_loc is not None:
+        ranges = tuple(args.div_loc)
+        plot_flux_divergence(ds, -1, X_range=ranges[:2], Z_range=ranges[2:], savefig=True)
+                                       
     # for i in range(len(ds['T'].values)):
         # basic_plot(ds, i)
         # plot_flux_divergence(ds, i)
