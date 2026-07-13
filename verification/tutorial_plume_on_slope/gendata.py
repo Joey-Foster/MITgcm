@@ -14,9 +14,9 @@ def write_binary(path, array):
         np.asarray(array, dtype=prec).ravel(order='F').tofile(fid)
 
 # Dimensions of grid
-nx = 1280
+nx = 320
 ny = 1
-nz = 240
+nz = 60
 
 # Nominal depth of model (meters)
 H = 200.0
@@ -112,9 +112,9 @@ pert = np.zeros((nx, ny), dtype=np.float64)
 epsilon = np.zeros((nx,), dtype=np.float64)
 
 # Multiscale toggle
-is_multiscale = False
+is_multiscale = True
 # subgrid lengthscale
-delta = 1 
+delta = 10 
 
 for i in range(nx):
     for j in range(ny):

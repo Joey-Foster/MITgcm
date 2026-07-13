@@ -47,14 +47,14 @@
  &PARM03
  nIter0=0,
 #nTimeSteps=20,
- nTimeSteps=4320,
+ nTimeSteps=4000,
  deltaT=20.0,
  abEps=0.01,
  pChkptFreq=0.0,
  chkptFreq=0.0,
- dumpFreq=600.0,
+ dumpFreq=500.0,
  monitorSelect=2,
- monitorFreq=600.,
+ monitorFreq=5000.,
  &
 
 # Gridding parameters
