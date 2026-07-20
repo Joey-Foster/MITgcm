@@ -105,7 +105,23 @@ def plot_flux_divergence(ds, time_idx, X_range=(None, None), Z_range=(None, None
     if savefig:
         plt.savefig(f"flux_divergence_t={ds['T'].values[time_idx]}.pdf", bbox_inches='tight')
 
-
+def moving_time_average(ds, X_pos, window=3):
+    time = ds['T'].values
+    fluxes = [compute_temperature_flux(ds, X_pos, i) for i in range(len(time))]
+    averaged = np.lib.stride_tricks.sliding_window_view(fluxes, window).mean(axis=1)
+    if window % 2 == 0:
+        time_windowed = time[window//2-1:-window//2] # convention to lose 1 extra point 
+                                                     # on the left for the even window
+    else:
+        time_windowed = time[window//2:-(window//2)]
+    fig, ax = plt.subplots()
+    plt.plot(time_windowed, averaged)
+    plt.xlabel('Time [s]')
+    plt.ylabel(r'Temperature flux [degC m$^2$ s$^{-1}$]')
+    plt.title(f'Time-averaged temperature flux through X={X_pos}')
+    fig.text(0.15, 0.815, f'window = {window * int(time[1] - time[0])}s', 
+             bbox=dict(boxstyle="round,pad=0.3", fc="white", alpha=0.9))
+    plt.savefig(f'time-averaged-temperature_flux_x={X_pos}.pdf', bbox_inches='tight')
 
 if __name__ == "__main__":
     
@@ -117,6 +133,9 @@ if __name__ == "__main__":
     parser.add_argument("--div-loc", help="Save localised flux divergence at final time "
                         "by providing 4 floats", nargs=4, type=float, 
                         metavar=("X_start", "X_end", "Z_start", "Z_end"))
+    parser.add_argument('-t', '--tavg', help='Save time-averaged tempertaure flux '
+                        'by providing the number of timesteps for the averaging window',
+                        type=int, metavar='Window size')
     args=parser.parse_args()
 
     ds = xr.open_dataset(args.d, chunks={})
@@ -130,7 +149,9 @@ if __name__ == "__main__":
     if args.div_loc is not None:
         ranges = tuple(args.div_loc)
         plot_flux_divergence(ds, -1, X_range=ranges[:2], Z_range=ranges[2:], savefig=True)
-                                       
+    if args.tavg:
+        moving_time_average(ds, 500, window=args.tavg)
+        
     # for i in range(len(ds['T'].values)):
         # basic_plot(ds, i)
         # plot_flux_divergence(ds, i)
