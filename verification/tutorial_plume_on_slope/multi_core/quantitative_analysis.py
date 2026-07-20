@@ -92,7 +92,7 @@ def temperature_flux_divergence(ds, time_idx, X_range=(None, None), Z_range=(Non
 def plot_flux_divergence(ds, time_idx, X_range=(None, None), Z_range=(None, None), savefig=False):
     plt.figure()
     div = temperature_flux_divergence(ds, time_idx, X_range, Z_range)
-    logged = np.log10(np.abs(div) + 1e-16)
+    logged = np.log10(np.abs(div) + 1e-10)
     logged.plot(
         cbar_kwargs={'label':r'$\log_{10}\left|\nabla \cdot (\mathbf{u}\theta)\right|$'},
         cmap = 'viridis',
@@ -105,7 +105,7 @@ def plot_flux_divergence(ds, time_idx, X_range=(None, None), Z_range=(None, None
     if savefig:
         plt.savefig(f"flux_divergence_t={ds['T'].values[time_idx]}.pdf", bbox_inches='tight')
 
-def moving_time_average(ds, X_pos, window=3):
+def temperature_flux_moving_tavg(ds, X_pos, window=3):
     time = ds['T'].values
     fluxes = [compute_temperature_flux(ds, X_pos, i) for i in range(len(time))]
     averaged = np.lib.stride_tricks.sliding_window_view(fluxes, window).mean(axis=1)
@@ -122,6 +122,23 @@ def moving_time_average(ds, X_pos, window=3):
     fig.text(0.15, 0.815, f'window = {window * int(time[1] - time[0])}s', 
              bbox=dict(boxstyle="round,pad=0.3", fc="white", alpha=0.9))
     plt.savefig(f'time-averaged-temperature_flux_x={X_pos}.pdf', bbox_inches='tight')
+    
+def coarsen_grid(ds, linear_sf):
+    array = ds.values
+    nz, ny, nx = np.shape(array)
+    coarsened = array.reshape(nz//linear_sf, linear_sf, nx//linear_sf, linear_sf).mean(axis=(1,3))
+    return coarsened
+
+def plot_flux_div_diff(ds_coarse, ds_hr, time_idx):
+    div_c = temperature_flux_divergence(ds_coarse, time_idx)
+    div_hr = temperature_flux_divergence(ds_hr, time_idx)
+    div_hr_c = coarsen_grid(div_hr, linear_sf=4)
+    div_hr_c = div_hr_c.assign_coords(X=ds_coarse.X, Z=ds_coarse.Z)
+    # TO DO:
+        # change this ^ to be a manually constructed dataset b/c coarsen_grid() acts on .values
+        # place into abs()
+        # make plot nice
+        # do args
 
 if __name__ == "__main__":
     
@@ -150,8 +167,9 @@ if __name__ == "__main__":
         ranges = tuple(args.div_loc)
         plot_flux_divergence(ds, -1, X_range=ranges[:2], Z_range=ranges[2:], savefig=True)
     if args.tavg:
-        moving_time_average(ds, 500, window=args.tavg)
+        temperature_flux_moving_tavg(ds, 500, window=args.tavg)
         
+
     # for i in range(len(ds['T'].values)):
-        # basic_plot(ds, i)
+    #     basic_plot(ds, i)
         # plot_flux_divergence(ds, i)
