@@ -19,8 +19,6 @@ ny = 1
 nz = 60
 
 highres_sf = 4
-# nx_highres = highres_sf * nx
-# nz_highres = highres_sf * nz
 
 subgrid_lengthscale = 10 # metres
 

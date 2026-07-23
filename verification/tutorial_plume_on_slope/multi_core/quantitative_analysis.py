@@ -123,7 +123,7 @@ def temperature_flux_moving_tavg(ds, X_pos, window=3):
              bbox=dict(boxstyle="round,pad=0.3", fc="white", alpha=0.9))
     plt.savefig(f'time-averaged-temperature_flux_x={X_pos}.pdf', bbox_inches='tight')
     
-def coarsen_grid(ds, linear_sf):
+def coarsen_data(ds, linear_sf):
     array = ds.values
     nz, ny, nx = np.shape(array)
     coarsened = array.reshape(nz//linear_sf, linear_sf, nx//linear_sf, linear_sf).mean(axis=(1,3))
@@ -131,19 +131,39 @@ def coarsen_grid(ds, linear_sf):
 
 def plot_flux_div_diff(ds_coarse, ds_hr, time_idx):
     div_c = temperature_flux_divergence(ds_coarse, time_idx)
+    
     div_hr = temperature_flux_divergence(ds_hr, time_idx)
-    div_hr_c = coarsen_grid(div_hr, linear_sf=4)
-    div_hr_c = div_hr_c.assign_coords(X=ds_coarse.X, Z=ds_coarse.Z)
-    # TO DO:
-        # change this ^ to be a manually constructed dataset b/c coarsen_grid() acts on .values
-        # place into abs()
-        # make plot nice
+    div_hr_c_values = coarsen_data(div_hr, linear_sf=4)
+    nz, nx = np.shape(div_hr_c_values)
+    div_hr_c_values = div_hr_c_values.reshape(nz, 1, nx) # force Y slice for dimension compatibility
+    div_hr_c = xr.DataArray(
+        data=div_hr_c_values,
+        coords=div_c.coords,
+        dims=div_c.dims
+        )
+
+    diff = abs(div_c - div_hr_c)
+    logged_diff = np.log10(diff + 1e-7)
+    plt.figure()
+    logged_diff.plot(
+        cbar_kwargs={'label':r'$\log_{10}\left|\nabla(\mathbf{u}\theta_1)-\nabla(\mathbf{u}\theta_2)\right|$'},
+        cmap = 'viridis',
+        vmin = logged_diff.min().values,
+        vmax = logged_diff.max().values
+        )   
+    plt.title("Log absolute difference in temperature flux divergence\n"
+              f"between coarse and highres runs, at t={int(diff['T'].values)}s")
+    plt.xlabel('X [m]')
+    plt.ylabel('Depth [m]')
+    plt.savefig(f"flux_div_diff_t={int(diff['T'].values)}", bbox_inches='tight')
         # do args
 
 if __name__ == "__main__":
     
     parser = argparse.ArgumentParser()
     parser.add_argument('-d', help="Path to .nc file", required=True, metavar='path/to/file')
+    parser.add_argument('-d2', help="Saves flux divergence difference at final time "
+                        "by providing path to higher resolution .nc file", metavar='path/to/file')
     parser.add_argument('-f', '--flux', help='Save temperature flux figure', action='store_true')
     parser.add_argument('-hc', '--heat', help='Save heat content figure', action='store_true')
     parser.add_argument('--div', help='Save flux divergence at final time', action='store_true')
@@ -168,6 +188,9 @@ if __name__ == "__main__":
         plot_flux_divergence(ds, -1, X_range=ranges[:2], Z_range=ranges[2:], savefig=True)
     if args.tavg:
         temperature_flux_moving_tavg(ds, 500, window=args.tavg)
+    if args.d2:
+        ds2 = xr.open_dataset(args.d2, chunks={})
+        plot_flux_div_diff(ds, ds2, -1)
         
 
     # for i in range(len(ds['T'].values)):
