@@ -3,6 +3,7 @@
 import numpy as np
 import xarray as xr
 import matplotlib.pyplot as plt
+import matplotlib.colors as colors
 import argparse
 from tqdm import tqdm
 
@@ -66,8 +67,9 @@ def eastward_heat_content(ds, X_pos, time_idx):
     return total_eastward_heat
 
 def plot_heat_content(ds, X_pos):
-    time = ds['T'].values
-    heat = [eastward_heat_content(ds, X_pos, i) for i in tqdm(range(len(time)), desc='Computing heat content')]
+    time = ds['T'].values[::10] # don't need as high a temporal resoltuion
+    heat = [eastward_heat_content(ds, X_pos, i) for i in tqdm(range(len(time)), 
+                                                              desc='Computing heat content')]
     plt.figure()
     plt.plot(time, heat)
     plt.xlabel('Time [s]')
@@ -133,7 +135,7 @@ def plot_flux_div_diff(ds_coarse, ds_hr, time_idx):
     div_c = temperature_flux_divergence(ds_coarse, time_idx)
     
     div_hr = temperature_flux_divergence(ds_hr, time_idx)
-    div_hr_c_values = coarsen_data(div_hr, linear_sf=4)
+    div_hr_c_values = coarsen_data(div_hr, linear_sf=2)
     nz, nx = np.shape(div_hr_c_values)
     div_hr_c_values = div_hr_c_values.reshape(nz, 1, nx) # force Y slice for dimension compatibility
     div_hr_c = xr.DataArray(
@@ -142,21 +144,39 @@ def plot_flux_div_diff(ds_coarse, ds_hr, time_idx):
         dims=div_c.dims
         )
 
-    diff = abs(div_c - div_hr_c)
-    logged_diff = np.log10(diff + 1e-7)
+    diff = div_hr_c - div_c
     plt.figure()
-    logged_diff.plot(
-        cbar_kwargs={'label':r'$\log_{10}\left|\nabla(\mathbf{u}\theta_1)-\nabla(\mathbf{u}\theta_2)\right|$'},
-        cmap = 'viridis',
-        vmin = logged_diff.min().values,
-        vmax = logged_diff.max().values
-        )   
-    plt.title("Log absolute difference in temperature flux divergence\n"
-              f"between coarse and highres runs, at t={int(diff['T'].values)}s")
+    diff.plot(
+        cbar_kwargs={'label':r'$\log_{10}\left(\nabla\cdot(\mathbf{u}\theta_{hr})-\nabla\cdot(\mathbf{u}\theta_{c})\right)$'},
+        cmap = 'seismic',
+        # vmin = diff.min().values,
+        # vmax = diff.max().values,
+        norm=colors.SymLogNorm(linthresh=5e-6)
+        )
+                               
+    plt.title("SymLog difference in temperature flux divergence\n"
+              f"between highres and coarse runs, at t={int(diff['T'].values)}s")
     plt.xlabel('X [m]')
     plt.ylabel('Depth [m]')
     plt.savefig(f"flux_div_diff_t={int(diff['T'].values)}", bbox_inches='tight')
-        # do args
+    
+def temperature_histogram(ds, time_idx):
+    # more work to do here to plot and extract useful information...
+    
+    time = ds['T'].values
+    theta = ds['Temp'].isel(T=time_idx).values.ravel()
+    plt.figure()
+    plt.hist(theta, bins=400)
+    tmin, tmax = [-0.01, 0.01]
+    plt.xlim([tmin, tmax])
+    plt.xlabel('Potential temperature [degC]')
+    plt.title(f'Temperature classes per grid cell at t={int(time[time_idx])}')
+    
+    zoomed_theta = theta[theta >= tmin]
+    mean = np.mean(zoomed_theta)
+    std = np.std(zoomed_theta)
+    print(f'{mean=}, {std=}')
+    # plt.savefig(f'temperature_histogram_t={int(time[time_idx])}.pdf', bbox_inches='tight')
 
 if __name__ == "__main__":
     
@@ -166,6 +186,7 @@ if __name__ == "__main__":
                         "by providing path to higher resolution .nc file", metavar='path/to/file')
     parser.add_argument('-f', '--flux', help='Save temperature flux figure', action='store_true')
     parser.add_argument('-hc', '--heat', help='Save heat content figure', action='store_true')
+    parser.add_argument('--hist', help='Save temperature histogram at final time', action='store_true')
     parser.add_argument('--div', help='Save flux divergence at final time', action='store_true')
     parser.add_argument("--div-loc", help="Save localised flux divergence at final time "
                         "by providing 4 floats", nargs=4, type=float, 
@@ -178,19 +199,21 @@ if __name__ == "__main__":
     ds = xr.open_dataset(args.d, chunks={})
     
     if args.flux:
-        plot_tempertature_flux(ds, 500)
+        plot_tempertature_flux(ds, 1000)
     if args.heat:
-        plot_heat_content(ds, 500)
+        plot_heat_content(ds, 1000)
     if args.div:
         plot_flux_divergence(ds, -1, savefig=True)
     if args.div_loc is not None:
         ranges = tuple(args.div_loc)
         plot_flux_divergence(ds, -1, X_range=ranges[:2], Z_range=ranges[2:], savefig=True)
     if args.tavg:
-        temperature_flux_moving_tavg(ds, 500, window=args.tavg)
+        temperature_flux_moving_tavg(ds, 1000, window=args.tavg)
     if args.d2:
         ds2 = xr.open_dataset(args.d2, chunks={})
         plot_flux_div_diff(ds, ds2, -1)
+    if args.hist:
+        temperature_histogram(ds, -1)
         
 
     # for i in range(len(ds['T'].values)):
