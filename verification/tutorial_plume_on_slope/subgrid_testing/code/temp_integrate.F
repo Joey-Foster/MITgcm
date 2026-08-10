@@ -142,8 +142,8 @@ C     tkey :: tape key (tile dependent)
 C     kkey :: tape key (level and tile dependent)
       INTEGER tkey, kkey
 #endif
-#ifdef ALLOW_MYPACKAGE
-      _RL tempKappa
+#ifdef ALLOW_BATHY_HOMOG
+      _RL ETA, XI
 #endif
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
@@ -242,6 +242,13 @@ CADJ STORE gtNm1(:,:,:,bi,bj)  = comlev1_bibj, key=tkey, kind=isbyte
 CADJ STORE kappaRk = comlev1_bibj, key = tkey, kind = isbyte
 # endif
 #endif /* INCLUDE_CALC_DIFFUSIVITY_CALL */
+
+#ifdef ALLOW_BATHY_HOMOG
+      CALL READ_diffK(kappaRk(1,1,1))
+      ETA = 0.0
+      XI = 0.0
+      CALL GBARTEST(ETA, XI)
+#endif 
 
 #ifndef DISABLE_MULTIDIM_ADVECTION
 C--     Some advection schemes are better calculated using a multi-dimensional
