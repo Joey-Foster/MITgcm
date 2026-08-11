@@ -34,7 +34,7 @@ for i, t in enumerate(tqdm(time.values, desc='Generating GIF frames')):
     buf.seek(0)
     
     frames.append(iio.imread(buf))
-    plt.show()
+#    plt.show()
     plt.close()
     
 iio.imwrite('animation.gif', frames, fps=20, loop=0)
