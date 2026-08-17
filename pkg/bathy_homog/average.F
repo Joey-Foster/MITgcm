@@ -4,12 +4,12 @@ C23456789012345678901234567890123456789012345678901234567890123456789012
       IMPLICIT NONE
 
       REAL h
-      DOUBLE PRECISION MY_FUNC, value_storage, xi
+      REAL MY_FUNC, value_storage, xi
       INTEGER N, i
-      DOUBLE PRECISION ETA(0:1000)
+      REAL ETA(0:1000)
 
       N = 1000 /* < hardcoded for now ^ */
-      h = 1.0D0/DBLE(N)
+      h = 1.0 / N
 
       DO i=0,N
        ETA(i) = i * h

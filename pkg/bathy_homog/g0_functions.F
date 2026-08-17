@@ -1,0 +1,48 @@
+C23456789012345678901234567890123456789012345678901234567890123456789012
+
+C hardcoded to assume a=b=1 for now
+
+      REAL FUNCTION g0_OFFDIAG(ETA, XI)
+      IMPLICIT NONE
+      REAL PI
+      REAL ETA, XI
+
+      PI = 3.14159265358979323846
+      g0_OFFDIAG = 2.0 * PI * (XI - 1.0) * COS(2.0*PI*ETA)
+
+      RETURN 
+      END
+
+      REAL FUNCTION g0_11(ETA, XI)
+      IMPLICIT NONE
+
+      REAL ETA, XI
+      REAL g0_OFFDIAG
+
+      g0_11 = g0_OFFDIAG(ETA, XI)**2 + 1.0
+
+      RETURN
+      END
+
+      REAL FUNCTION g0_22()
+
+      g0_22 = 1.0
+
+      RETURN
+      END
+
+            
+      SUBROUTINE STORE_g0(ETA, XI, MATRIX)
+      IMPLICIT NONE
+
+      REAL MATRIX(2,2)
+      REAL ETA, XI
+
+      REAL g0_11, g0_22, g0_OFFDIAG
+
+      MATRIX(1,1) = g0_11(ETA, XI)
+      MATRIX(1,2) = g0_OFFDIAG(ETA, XI)
+      MATRIX(2,1) = g0_OFFDIAG(ETA, XI)
+      MATRIX(2,2) = g0_22()
+
+      END

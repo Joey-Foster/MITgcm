@@ -143,7 +143,7 @@ C     kkey :: tape key (level and tile dependent)
       INTEGER tkey, kkey
 #endif
 #ifdef ALLOW_BATHY_HOMOG
-      _RL ETA, XI
+      _RL XI
 #endif
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
@@ -245,9 +245,8 @@ CADJ STORE kappaRk = comlev1_bibj, key = tkey, kind = isbyte
 
 #ifdef ALLOW_BATHY_HOMOG
       CALL READ_diffK(kappaRk(1,1,1))
-      ETA = 0.0
-      XI = 0.0
-      CALL GBARTEST(ETA, XI)
+      XI = 0.5
+      CALL TEST_GBAR(XI)
 #endif 
 
 #ifndef DISABLE_MULTIDIM_ADVECTION
