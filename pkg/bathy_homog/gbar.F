@@ -102,21 +102,16 @@ C23456789012345678901234567890123456789012345678901234567890123456789012
 
       END
 
-
-      SUBROUTINE TEST_GBAR(XI)
+      SUBROUTINE CONTRACT_Kgbar(XI, RESULT)
       IMPLICIT NONE
-       
-      REAL XI 
-      REAL RESULT(2,2)
-      INTEGER i,j
 
-      XI = 0.5
-      CALL STORE_gbar(XI, RESULT)
-      
-      DO i=1,2
-       DO j=1,2
-       PRINT*, "gbar(",i,",",j,")=", RESULT(i,j)
-       ENDDO
-      ENDDO
+      REAL XI
+      REAL RESULT(2, 2)
+      REAL K(2, 2), gbar(2,2)
+
+      COMMON /DIFFUSION_MATRIX/ K
+      CALL STORE_gbar(XI, gbar)
+
+      CALL CONTRACT(K, gbar, RESULT)
 
       END

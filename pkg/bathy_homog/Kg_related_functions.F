@@ -1,28 +1,37 @@
 C23456789012345678901234567890123456789012345678901234567890123456789012
 
+      SUBROUTINE CONTRACT(A, B, AB)
+      IMPLICIT NONE
+      
+      REAL A(2, 2), B(2,2)
+      REAL AB(2, 2)
+
+      REAL TMP_SUM
+      INTEGER i, j, k
+
+      DO i=1,2
+       DO j=1,2
+        TMP_SUM = 0.0
+        DO k=1,2
+        TMP_SUM = TMP_SUM + A(i,k) * B(k, j)
+        ENDDO
+        AB(i,j) = TMP_SUM
+       ENDDO
+      ENDDO
+
+      END
+
       SUBROUTINE CONTRACT_Kg(ETA, XI, RESULT)
       IMPLICIT NONE
 
       REAL ETA, XI
       REAL RESULT(2, 2)
       REAL K(2, 2), g0(2,2)
-      REAL TMP_SUM
-
-      INTEGER i, j, kIdx
 
       COMMON /DIFFUSION_MATRIX/ K
-
       CALL STORE_g0(ETA, XI, g0)
 
-      DO i=1,2
-       DO j=1,2
-        TMP_SUM = 0.0
-        DO kIdx=1,2
-        TMP_SUM = TMP_SUM + K(i,kIdx) * g0(kIdx, j)
-        ENDDO
-        RESULT(i,j) = TMP_SUM
-       ENDDO
-      ENDDO
+      CALL CONTRACT(K, g0, RESULT)
 
       END
 
