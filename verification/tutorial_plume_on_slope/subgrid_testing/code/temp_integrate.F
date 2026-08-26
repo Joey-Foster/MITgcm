@@ -145,7 +145,7 @@ C     kkey :: tape key (level and tile dependent)
 #ifdef ALLOW_BATHY_HOMOG
 #include "SET_GRID.h"
       _RL trAdvCFL(3,nSx,nSy)
-      _RL RESULT(2,2)
+      _RL Kgbar(2,2)
 #endif
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
@@ -246,19 +246,36 @@ CADJ STORE kappaRk = comlev1_bibj, key = tkey, kind = isbyte
 #endif /* INCLUDE_CALC_DIFFUSIVITY_CALL */
 
 #ifdef ALLOW_BATHY_HOMOG
-         CALL USE_IMPLICIT_K(
-     &                     delX(120), delR(30),
-     &                     uFld(120,j,30), wFld(120,j,30),
-     &                     trAdvCFL(1,bi,bj), 
-     &                     trAdvCFL(3,bi,bj))
-      
-      CALL CONTRACT_Kgbar(0.5, RESULT)
-      PRINT*, "Kgbar="
-      PRINT*, RESULT(1,1)
-      PRINT*, RESULT(1,2)
-      PRINT*, RESULT(2,1)
-      PRINT*, RESULT(2,2)
-#endif 
+      DO k=1,Nr
+       DO j=1-OLy,sNy+OLy
+        DO i=1-OLx,sNx+OLx
+         IF (recip_hFac(i,j,k) .GT. 1.0) THEN
+         
+            IF (diffKhT .EQ. 0.0 .AND. 
+     &         kappaRk(i,j,k) .EQ. 0.0) THEN
+     
+               CALL USE_IMPLICIT_K(
+     &                    delX(i), delR(k),
+     &                    uFld(i,j,k), wFld(i,j,k),
+     &                    trAdvCFL(1,bi,bj), 
+     &                    trAdvCFL(3,bi,bj))
+            ELSE
+               CALL USE_EXPLICIT_K(diffKhT, 
+     &                             kappaRk(i,j,k))
+            ENDIF
+            
+            CALL CONTRACT_Kgbar(0.5, Kgbar)
+            
+            diffKhT = Kgbar(1,1)
+C           what to assign to K(1,2), K(2,1)?  
+            kappaRk(i,j,k) = Kgbar(2,2)
+          
+         ENDIF
+        ENDDO
+       ENDDO
+      ENDDO
+
+#endif /* ALLOW_BATHY_HOMOG */
 
 #ifndef DISABLE_MULTIDIM_ADVECTION
 C--     Some advection schemes are better calculated using a multi-dimensional

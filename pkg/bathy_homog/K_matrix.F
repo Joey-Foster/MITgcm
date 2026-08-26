@@ -1,7 +1,7 @@
 C23456789012345678901234567890123456789012345678901234567890123456789012
 #include "CPP_OPTIONS.h"
 
-      SUBROUTINE READ_EXPLICIT_K(diffKh, diffKz)
+      SUBROUTINE USE_EXPLICIT_K(diffKh, diffKz)
       IMPLICIT NONE
 #include "EEPARAMS.h"
 
@@ -36,6 +36,6 @@ C     use upwind numerical diffusion for now (very overdamped)
       K(2,1) = 0.0
       K(2,2) = implicit_diffKz
 
-      PRINT*, "bathy homog", K(1,1), K(2,1), K(2,2)
+      PRINT*, "bathy homog Korig=", K(1,1), K(2,1), K(2,2)
 
       END
