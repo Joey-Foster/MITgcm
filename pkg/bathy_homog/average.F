@@ -1,12 +1,14 @@
 C23456789012345678901234567890123456789012345678901234567890123456789012
+#include "CPP_OPTIONS.h"
 
       SUBROUTINE AVERAGE(MY_FUNC, xi, value_storage)
       IMPLICIT NONE
+#include "EEPARAMS.h"
 
-      REAL h
-      REAL MY_FUNC, value_storage, xi
+      _RL h
+      _RL MY_FUNC, value_storage, xi
       INTEGER N, i
-      REAL ETA(0:1000)
+      _RL ETA(0:1000)
 
       N = 1000 /* < hardcoded for now ^ */
       h = 1.0 / N

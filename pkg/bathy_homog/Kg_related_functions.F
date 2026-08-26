@@ -1,12 +1,14 @@
 C23456789012345678901234567890123456789012345678901234567890123456789012
+#include "CPP_OPTIONS.h"
 
       SUBROUTINE CONTRACT(A, B, AB)
       IMPLICIT NONE
+#include "EEPARAMS.h"
       
-      REAL A(2, 2), B(2,2)
-      REAL AB(2, 2)
+      _RL A(2, 2), B(2,2)
+      _RL AB(2, 2)
 
-      REAL TMP_SUM
+      _RL TMP_SUM
       INTEGER i, j, k
 
       DO i=1,2
@@ -23,10 +25,11 @@ C23456789012345678901234567890123456789012345678901234567890123456789012
 
       SUBROUTINE CONTRACT_Kg(ETA, XI, RESULT)
       IMPLICIT NONE
+#include "EEPARAMS.h"
 
-      REAL ETA, XI
-      REAL RESULT(2, 2)
-      REAL K(2, 2), g0(2,2)
+      _RL ETA, XI
+      _RL RESULT(2, 2)
+      _RL K(2, 2), g0(2,2)
 
       COMMON /DIFFUSION_MATRIX/ K
       CALL STORE_g0(ETA, XI, g0)
@@ -36,11 +39,13 @@ C23456789012345678901234567890123456789012345678901234567890123456789012
       END
 
 C     Store "1/Kg"- and "Kg/Kg"-type constructions 
-      REAL FUNCTION recip_Kg22(ETA, XI)
+      FUNCTION recip_Kg22(ETA, XI)
       IMPLICIT NONE
+#include "EEPARAMS.h"
       
-      REAL ETA, XI
-      REAL Kg(2,2)
+      _RL ETA, XI
+      _RL Kg(2,2)
+      _RL recip_Kg22
 
       CALL CONTRACT_Kg(ETA, XI, KG)
 
@@ -49,11 +54,13 @@ C     Store "1/Kg"- and "Kg/Kg"-type constructions
       RETURN 
       END
 
-      REAL FUNCTION Kg21_OVER_Kg22(ETA, XI)
+      FUNCTION Kg21_OVER_Kg22(ETA, XI)
       IMPLICIT NONE
-      
-      REAL ETA, XI
-      REAL Kg(2,2)
+#include "EEPARAMS.h"      
+
+      _RL ETA, XI
+      _RL Kg(2,2)
+      _RL Kg21_OVER_Kg22
 
       CALL CONTRACT_Kg(ETA, XI, KG)
 
@@ -66,10 +73,11 @@ C     Store "1/Kg"- and "Kg/Kg"-type constructions
 C     Construct helper "constants" c^2_1 and c^1_1
       SUBROUTINE C21(XI, RESULT)
       IMPLICIT NONE
+#include "EEPARAMS.h"
 
-      REAL XI
-      REAL RESULT
-      REAL recip_Kg22
+      _RL XI
+      _RL RESULT
+      _RL recip_Kg22
       EXTERNAL recip_Kg22
 
       CALL AVERAGE(recip_Kg22, XI, RESULT)
@@ -80,11 +88,12 @@ C     Construct helper "constants" c^2_1 and c^1_1
 
       SUBROUTINE C11(XI, RESULT)
       IMPLICIT NONE
+#include "EEPARAMS.h"
 
-      REAL XI
-      REAL RESULT
-      REAL C21_val
-      REAL Kg21_OVER_Kg22
+      _RL XI
+      _RL RESULT
+      _RL C21_val
+      _RL Kg21_OVER_Kg22
       EXTERNAL Kg21_OVER_Kg22
 
       CALL AVERAGE(Kg21_OVER_Kg22, XI, RESULT)
@@ -98,24 +107,24 @@ C     Construct averaging integrands for gbar
 C     (these would be lambda functions in python)
 C23456789012345678901234567890123456789012345678901234567890123456789012
 
-      REAL FUNCTION g012_OVER_Kg22(ETA, XI)
+      FUNCTION g012_OVER_Kg22(ETA, XI)
       IMPLICIT NONE
+#include "EEPARAMS.h"
       
-      REAL ETA, XI
-      REAL g0_OFFDIAG
-      REAL recip_Kg22
+      _RL ETA, XI
+      _RL recip_Kg22, g0_OFFDIAG, g012_OVER_Kg22
       
       g012_OVER_Kg22 = g0_OFFDIAG(ETA, XI) * recip_Kg22(ETA, XI)
 
       RETURN 
       END     
 
-      REAL FUNCTION g021_MUL_Kg21_OVER_Kg22(ETA, XI)
+      FUNCTION g021_MUL_Kg21_OVER_Kg22(ETA, XI)
       IMPLICIT NONE
+#include "EEPARAMS.h"
       
-      REAL ETA, XI
-      REAL g0_OFFDIAG
-      REAL Kg21_OVER_Kg22
+      _RL ETA, XI
+      _RL Kg21_OVER_Kg22, g0_OFFDIAG, g021_MUL_Kg21_OVER_Kg22
       
       g021_MUL_Kg21_OVER_Kg22 = g0_OFFDIAG(ETA, XI) 
      &                        * Kg21_OVER_Kg22(ETA, XI)
@@ -123,24 +132,24 @@ C23456789012345678901234567890123456789012345678901234567890123456789012
       RETURN 
       END    
 
-      REAL FUNCTION g022_OVER_Kg22(ETA, XI)
+      FUNCTION g022_OVER_Kg22(ETA, XI)
       IMPLICIT NONE
+#include "EEPARAMS.h"
       
-      REAL ETA, XI
-      REAL g0_22
-      REAL recip_Kg22
+      _RL ETA, XI
+      _RL recip_Kg22, g0_22, g022_OVER_Kg22
       
       g022_OVER_Kg22 = g0_22() * recip_Kg22(ETA, XI)
 
       RETURN 
       END   
 
-      REAL FUNCTION g022_MUL_Kg21_OVER_Kg22(ETA, XI)
+      FUNCTION g022_MUL_Kg21_OVER_Kg22(ETA, XI)
       IMPLICIT NONE
+#include "EEPARAMS.h"
       
-      REAL ETA, XI
-      REAL g0_22
-      REAL Kg21_OVER_Kg22
+      _RL ETA, XI
+      _RL Kg21_OVER_Kg22, g0_22, g022_MUL_Kg21_OVER_Kg22
       
       g022_MUL_Kg21_OVER_Kg22 = g0_22() 
      &                        * Kg21_OVER_Kg22(ETA, XI)

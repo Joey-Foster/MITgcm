@@ -143,7 +143,7 @@ C     kkey :: tape key (level and tile dependent)
       INTEGER tkey, kkey
 #endif
 #ifdef ALLOW_BATHY_HOMOG
-      _RL delX(1-OLx:sNx+OLx)
+#include "SET_GRID.h"
       _RL trAdvCFL(3,nSx,nSy)
       _RL RESULT(2,2)
 #endif
@@ -246,30 +246,18 @@ CADJ STORE kappaRk = comlev1_bibj, key = tkey, kind = isbyte
 #endif /* INCLUDE_CALC_DIFFUSIVITY_CALL */
 
 #ifdef ALLOW_BATHY_HOMOG
-      CALL USE_IMPLICIT_K(
-     &                    delX(120), delR(30),
-     &                    uFld(120,1,30), wFld(120,1,30),
-     &                    trAdvCFL(1,bi,bj), 
-     &                    trAdvCFL(3,bi,bj))
-      PRINT*, "bathy homog u,w=", uFLd(120,1,30), wFld(120,1,30) 
-      PRINT*, "bathy homog dx, dz=", delX(120), delR(30)
-c      DO k=1,Nr
-c       DO j=1-OLy,sNy+OLy
-c        DO i=1-OLx,sNx+OLx
-c         CALL USE_IMPLICIT_K(
-c     &                     delX(i), delR(k),
-c     &                     uFld(i,j,k), wFld(i,j,k),
-c     &                     trAdvCFL(1,bi,bj), 
-c     &                     trAdvCFL(3,bi,bj))
-c        ENDDO
-c       ENDDO
-c      ENDDO
-c      CALL CONTRACT_Kgbar(0.5, RESULT)
-c      PRINT*, "Kgbar="
-c      PRINT*, RESULT(1,1)
-c      PRINT*, RESULT(1,2)
-c      PRINT*, RESULT(2,1)
-c      PRINT*, RESULT(2,2)
+         CALL USE_IMPLICIT_K(
+     &                     delX(120), delR(30),
+     &                     uFld(120,j,30), wFld(120,j,30),
+     &                     trAdvCFL(1,bi,bj), 
+     &                     trAdvCFL(3,bi,bj))
+      
+      CALL CONTRACT_Kgbar(0.5, RESULT)
+      PRINT*, "Kgbar="
+      PRINT*, RESULT(1,1)
+      PRINT*, RESULT(1,2)
+      PRINT*, RESULT(2,1)
+      PRINT*, RESULT(2,2)
 #endif 
 
 #ifndef DISABLE_MULTIDIM_ADVECTION

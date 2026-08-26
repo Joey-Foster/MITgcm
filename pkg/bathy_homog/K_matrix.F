@@ -1,10 +1,12 @@
 C23456789012345678901234567890123456789012345678901234567890123456789012
+#include "CPP_OPTIONS.h"
 
       SUBROUTINE READ_EXPLICIT_K(diffKh, diffKz)
       IMPLICIT NONE
+#include "EEPARAMS.h"
 
-      REAL diffKh, diffKz
-      REAL K(2,2)
+      _RL diffKh, diffKz
+      _RL K(2,2)
 
       COMMON /DIFFUSION_MATRIX/ K
 
@@ -17,15 +19,17 @@ C23456789012345678901234567890123456789012345678901234567890123456789012
 
       SUBROUTINE USE_IMPLICIT_K(dx, dz, u, w, courant_x, courant_z)
       IMPLICIT NONE
+#include "EEPARAMS.h"
 
-      REAL dx, dz, u, w, courant_x, courant_z
-      REAL implicit_diffKh, implicit_diffKz
-      REAL K(2,2)
+      _RL dx, dz, u, w, courant_x, courant_z
+      _RL implicit_diffKh, implicit_diffKz
+      _RL K(2,2)
 
       COMMON /DIFFUSION_MATRIX/ K
 
-      implicit_diffKh = 0.5 * ABS(u) * dx
-      implicit_diffKz = 0.5 * ABS(w) * dz
+C     use upwind numerical diffusion for now (very overdamped)
+      implicit_diffKh = 0.5 * ABS(u) * dx * (1 - courant_x)
+      implicit_diffKz = 0.5 * ABS(w) * dz * (1 - courant_z)
 
       K(1,1) = implicit_diffKh
       K(1,2) = 0.0
