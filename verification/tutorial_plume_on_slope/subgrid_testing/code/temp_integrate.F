@@ -246,6 +246,7 @@ CADJ STORE kappaRk = comlev1_bibj, key = tkey, kind = isbyte
 #endif /* INCLUDE_CALC_DIFFUSIVITY_CALL */
 
 #ifdef ALLOW_BATHY_HOMOG
+      IF ( useBATHY_HOMOG ) THEN
       DO k=1,Nr
        DO j=1-OLy,sNy+OLy
         DO i=1-OLx,sNx+OLx
@@ -274,6 +275,7 @@ C           what to assign to K(1,2), K(2,1)?
         ENDDO
        ENDDO
       ENDDO
+      ENDIF
 
 #endif /* ALLOW_BATHY_HOMOG */
 
