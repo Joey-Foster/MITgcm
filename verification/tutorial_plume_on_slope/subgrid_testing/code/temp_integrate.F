@@ -146,6 +146,10 @@ C     kkey :: tape key (level and tile dependent)
 #include "SET_GRID.h"
       _RL trAdvCFL(3,nSx,nSy)
       _RL Kgbar(2,2)
+      
+      _RL diffKhT_copy
+      _RL kappaRk_copy(1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr)
+      
 #endif
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
@@ -240,6 +244,19 @@ CADJ STORE gtNm1(:,:,:,bi,bj)  = comlev1_bibj, key=tkey, kind=isbyte
      I         GAD_TEMPERATURE, useGMredi, useKPP,
      O         kappaRk,
      I         myThid )
+     
+#ifdef ALLOW_BATHY_HOMOG
+C     call to subroutine AGAIN instead of copying kappaRk
+C     directly as kappaRk will be modified on each timestep
+C     so this preserves the original calculation
+      IF ( useBATHY_HOMOG ) THEN
+      CALL CALC_3D_DIFFUSIVITY(
+     I         bi, bj, iMin, iMax, jMin, jMax,
+     I         GAD_TEMPERATURE, useGMredi, useKPP,
+     O         kappaRk_copy,
+     I         myThid )  
+      ENDIF
+#endif
 # ifdef ALLOW_AUTODIFF_TAMC
 CADJ STORE kappaRk = comlev1_bibj, key = tkey, kind = isbyte
 # endif
@@ -247,13 +264,18 @@ CADJ STORE kappaRk = comlev1_bibj, key = tkey, kind = isbyte
 
 #ifdef ALLOW_BATHY_HOMOG
       IF ( useBATHY_HOMOG ) THEN
+
+      IF ( myIter .EQ. 1 ) THEN
+        diffKhT_copy = diffKhT
+      ENDIF
+      
       DO k=1,Nr
        DO j=1-OLy,sNy+OLy
         DO i=1-OLx,sNx+OLx
          IF (recip_hFac(i,j,k) .GT. 1.0) THEN
          
-            IF (diffKhT .EQ. 0.0 .AND. 
-     &         kappaRk(i,j,k) .EQ. 0.0) THEN
+            IF (diffKhT_copy .EQ. 0.0 .AND. 
+     &         kappaRk_copy(i,j,k) .EQ. 0.0) THEN
      
                CALL USE_IMPLICIT_K(
      &                    delX(i), delR(k),
@@ -261,13 +283,13 @@ CADJ STORE kappaRk = comlev1_bibj, key = tkey, kind = isbyte
      &                    trAdvCFL(1,bi,bj), 
      &                    trAdvCFL(3,bi,bj))
             ELSE
-               CALL USE_EXPLICIT_K(diffKhT, 
-     &                             kappaRk(i,j,k))
+               CALL USE_EXPLICIT_K(diffKhT_copy, 
+     &                             kappaRk_copy(i,j,k))
             ENDIF
             
             CALL CONTRACT_Kgbar(0.5, Kgbar)
             
-            diffKhT = Kgbar(1,1)
+            diffKhT = Kgbar(1,1) /* horizontal diffusion applies to the whole grid...? */
 C           what to assign to K(1,2), K(2,1)?  
             kappaRk(i,j,k) = Kgbar(2,2)
           
@@ -275,6 +297,7 @@ C           what to assign to K(1,2), K(2,1)?
         ENDDO
        ENDDO
       ENDDO
+      
       ENDIF
 
 #endif /* ALLOW_BATHY_HOMOG */

@@ -15,6 +15,8 @@ C23456789012345678901234567890123456789012345678901234567890123456789012
       K(2,1) = 0.0
       K(2,2) = diffKz
 
+      PRINT*, "bathy homog Kread=", K(1,1), K(2,1), K(2,2)
+
       END
 
       SUBROUTINE USE_IMPLICIT_K(dx, dz, u, w, courant_x, courant_z)

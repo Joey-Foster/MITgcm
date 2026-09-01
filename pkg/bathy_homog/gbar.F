@@ -117,8 +117,25 @@ C23456789012345678901234567890123456789012345678901234567890123456789012
       _RL K(2, 2), gbar(2,2)
 
       COMMON /DIFFUSION_MATRIX/ K
-      CALL STORE_gbar(XI, gbar)
 
-      CALL CONTRACT(K, gbar, RESULT)
+C     if, even after implicit K insertion,
+C     K(2,2) = 0, ignore the homog to avoid
+C     DIV_ZERO errors and set the result to 0. 
+      IF ( K(2,2) .EQ. 0.0 ) THEN
+       RESULT(1,1) = 0.0
+       RESULT(1,2) = 0.0
+       RESULT(2,1) = 0.0
+       RESULT(2,2) = 0.0
+      
+      ELSE
+
+            CALL STORE_gbar(XI, gbar)
+
+            CALL CONTRACT(K, gbar, RESULT)
+            
+      ENDIF
+      
+      PRINT*, "bathy homog Kgbar=", 
+     &        RESULT(1,1), RESULT(2,1), RESULT(2,2)
 
       END
