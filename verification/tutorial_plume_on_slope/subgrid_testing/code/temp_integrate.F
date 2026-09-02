@@ -146,10 +146,10 @@ C     kkey :: tape key (level and tile dependent)
 #include "SET_GRID.h"
       _RL trAdvCFL(3,nSx,nSy)
       _RL Kgbar(2,2)
-      
       _RL diffKhT_copy
       _RL kappaRk_copy(1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr)
       
+      LOGICAL testAdvectionHomog
 #endif
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
@@ -272,7 +272,8 @@ CADJ STORE kappaRk = comlev1_bibj, key = tkey, kind = isbyte
       DO k=1,Nr
        DO j=1-OLy,sNy+OLy
         DO i=1-OLx,sNx+OLx
-         IF (recip_hFac(i,j,k) .GT. 1.0) THEN
+         IF (0.0 .LT. hFacC(i,j,k,bi,bj) .AND.
+     &          hFacC(i,j,k,bi,bj) .LT. 1.0) THEN
          
             IF (diffKhT_copy .EQ. 0.0 .AND. 
      &         kappaRk_copy(i,j,k) .EQ. 0.0) THEN
@@ -336,6 +337,7 @@ CADJ STORE som_T(:,:,:,bi,bj,:) = comlev1_bibj, key=tkey, kind=isbyte
 # ifdef ALLOW_DEBUG
         IF (debugMode) CALL DEBUG_CALL('GAD_ADVECTION',myThid)
 # endif
+
         CALL GAD_ADVECTION(
      I             tempImplVertAdv,
      I             tempAdvScheme, tempVertAdvScheme, GAD_TEMPERATURE,
@@ -373,6 +375,36 @@ CADJ STORE gtNm1(:,:,k,bi,bj)  = comlev1_bibj_k, key=kkey, kind = isbyte
      O                uTrans, vTrans, rTransKp,
      O                maskUp, xA, yA,
      I                k, bi, bj, myThid )
+     
+#ifdef ALLOW_BATHY_HOMOG
+       testAdvectionHomog = .FALSE.
+
+       IF ( testAdvectionHomog ) THEN
+       
+C      ROUGH PLAN:
+C      copy corner coords for x and z (x_n/np1, z_n/np1 in schematic notation)
+C      pass copied corner coords into FLAT2ROT_coords() to compute tilde{x,z}
+C      pass uTrans, rTrans from above CALC_ADV_FLOW call into velTrans_unitsquare()
+C      
+C      what to do about MAP2XI_coords() ?
+       
+       
+        DO j=1-OLy,sNy+OLy
+         DO i=1-OLx,sNx+OLx
+          IF (0.0 .LT. hFacC(i,j,k,bi,bj) .AND.
+     &          hFacC(i,j,k,bi,bj) .LT. 1.0) THEN
+
+           CALL FLAT2ROT_coords(
+     &                     xG(i,j,bi,bj), rF(k),
+     &                     delX(i), delR(k),
+     &                     hFacC(i,j,k,bi,bj), hFacW(i,j,k,bi,bj))
+      
+          ENDIF
+         ENDDO
+        ENDDO
+
+       ENDIF
+#endif
 
 C--   Collect forcing term in local array gtForc:
         DO j=1-OLy,sNy+OLy
