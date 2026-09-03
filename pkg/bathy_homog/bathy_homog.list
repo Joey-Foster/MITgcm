@@ -1,3 +1,7 @@
-bathy_homog_init_varia.f
-bathy_homog_average.f
-bathy_homog_gbar.f
+average.f
+bathy_homog_readparms.f
+coord_transform.f
+g0_functions.f
+gbar.f
+K_matrix.f
+Kg_related_functions.f

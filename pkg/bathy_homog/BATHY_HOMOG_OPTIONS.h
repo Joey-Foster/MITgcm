@@ -18,14 +18,8 @@ CEOP
 #ifdef ALLOW_BATHY_HOMOG
 C Place CPP define/undef flag here
 
-C to reduce memory storage, disable unused array with those CPP flags :
-#define BATHY_HOMOG_3D_STATE
-#define BATHY_HOMOG_2D_STATE
-#define BATHY_HOMOG_TENDENCY
+C to reduce memory storage, disable unused array with those CPP flags
 
-#undef BATHY_HOMOG_SPECIAL_COMPILE_OPTION1
-
-#define BATHY_HOMOG_SPECIAL_COMPILE_OPTION2
 
 #endif /* ALLOW_BATHY_HOMOG */
 #endif /* BATHY_HOMOG_OPTIONS_H */

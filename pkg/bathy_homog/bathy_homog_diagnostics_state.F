@@ -37,24 +37,6 @@ C     !LOCAL VARIABLES:
 #ifdef ALLOW_DIAGNOSTICS
       IF ( useDiagnostics ) THEN
 
-#ifdef BATHY_HOMOG_3D_STATE
-         CALL DIAGNOSTICS_FILL( mypa_StatScal1,'MYPaSta1',
-     &                          0,Nr, 0, 1, 1, myThid )
-         CALL DIAGNOSTICS_FILL( mypa_StatScal2,'MYPaSta2',
-     &                          0,Nr, 0, 1, 1, myThid )
-         CALL DIAGNOSTICS_FILL( mypa_StatVelU, 'MYPaStaU',
-     &                          0,Nr, 0, 1, 1, myThid )
-         CALL DIAGNOSTICS_FILL( mypa_StatVelV, 'MYPaStaV',
-     &                          0,Nr, 0, 1, 1, myThid )
-#endif /* BATHY_HOMOG_3D_STATE */
-
-#ifdef BATHY_HOMOG_2D_STATE
-         CALL DIAGNOSTICS_FILL( mypa_Surf1 ,   'MYPaSur1',
-     &                          0, 1, 0, 1, 1, myThid )
-         CALL DIAGNOSTICS_FILL( mypa_Surf2 ,   'MYPaSur2',
-     &                          0, 1, 0, 1, 1, myThid )
-#endif /* BATHY_HOMOG_2D_STATE */
-
       ENDIF
 #endif /* ALLOW_DIAGNOSTICS */
 

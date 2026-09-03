@@ -28,18 +28,7 @@ C     iUnit      :: Work variable for IO unit number
       CHARACTER*(MAX_LEN_MBUF) msgBuf
       INTEGER iUnit
 
-      NAMELIST /BATHY_HOMOG_PARM01/
-     &       myPa_MNC,
-     &       myPa_StaV_Cgrid, myPa_Tend_Cgrid,
-     &       myPa_applyTendT, myPa_applyTendS,
-     &       myPa_applyTendU, myPa_applyTendV,
-     &       myPa_doSwitch1,  myPa_doSwitch2,
-     &       myPa_index1,     myPa_index2,
-     &       myPa_param1,     myPa_param2,
-     &       myPa_string1,    myPa_string2,
-     &       myPa_Scal1File,  myPa_Scal2File,
-     &       myPa_VelUFile,   myPa_VelVFile,
-     &       myPa_Surf1File,  myPa_Surf2File
+      NAMELIST /BATHY_HOMOG_PARM01/ includeAdvec_Homog
 
       IF ( .NOT.useBATHY_HOMOG ) THEN
 C-    pkg BATHY_HOMOG is not used
@@ -54,29 +43,7 @@ C     print a (weak) warning if data.bathy_homog is found
       _BEGIN_MASTER(myThid)
 
 C--   Default values for BATHY_HOMOG
-      myPa_MNC         = useMNC
-      myPa_StaV_Cgrid  = .TRUE.
-      myPa_Tend_Cgrid  = .TRUE.
-      myPa_applyTendT  = .FALSE.
-      myPa_applyTendS  = .FALSE.
-      myPa_applyTendU  = .FALSE.
-      myPa_applyTendV  = .FALSE.
-C-    additional parameters:
-      myPa_doSwitch1   = .FALSE.
-      myPa_doSwitch2   = .FALSE.
-      myPa_index1      = 0
-      myPa_index2      = 0
-      myPa_param1      = 0. _d 0
-      myPa_param2      = 0. _d 0
-      myPa_string1     = ' '
-      myPa_string2     = ' '
-C-    file names for initial conditions:
-      myPa_Scal1File   = ' '
-      myPa_Scal2File   = ' '
-      myPa_VelUFile    = ' '
-      myPa_VelVFile    = ' '
-      myPa_Surf1File   = ' '
-      myPa_Surf2File   = ' '
+      includeAdvec_Homog = .FALSE.    
 
       WRITE(msgBuf,'(A)') 
      &      'BATHY_HOMOG_READPARMS: opening data.bathy_homog'
@@ -99,14 +66,6 @@ C     Close the open data file
 #else
       CLOSE(iUnit,STATUS='DELETE')
 #endif /* SINGLE_DISK_IO */
-
-C     Make sure that we locally honor the global MNC on/off flag
-      myPa_MNC = myPa_MNC .AND. useMNC
-#ifndef ALLOW_MNC
-C     Fix to avoid running without getting any output:
-      myPa_MNC = .FALSE.
-#endif
-      myPa_MDSIO = (.NOT. myPa_MNC) .OR. outputTypesInclusive
 
       _END_MASTER(myThid)
 
