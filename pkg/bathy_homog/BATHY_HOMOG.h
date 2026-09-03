@@ -12,8 +12,9 @@ CEOP
 
 C     BATHY_HOMOG parameters
       LOGICAL includeAdvec_Homog
+      LOGICAL nonSquareDomain
 
-      COMMON /BATHY_HOMOG_PARAMS_L/ includeAdvec_Homog
+      COMMON /BATHY_HOMOG_PARAMS/ includeAdvec_Homog, nonSquareDomain
 
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|

@@ -28,7 +28,8 @@ C     iUnit      :: Work variable for IO unit number
       CHARACTER*(MAX_LEN_MBUF) msgBuf
       INTEGER iUnit
 
-      NAMELIST /BATHY_HOMOG_PARM01/ includeAdvec_Homog
+      NAMELIST /BATHY_HOMOG_PARM01/ 
+     &    includeAdvec_Homog, nonSquareDomain
 
       IF ( .NOT.useBATHY_HOMOG ) THEN
 C-    pkg BATHY_HOMOG is not used
@@ -43,7 +44,8 @@ C     print a (weak) warning if data.bathy_homog is found
       _BEGIN_MASTER(myThid)
 
 C--   Default values for BATHY_HOMOG
-      includeAdvec_Homog = .FALSE.    
+      includeAdvec_Homog = .FALSE.
+      nonSquareDomain    = .FALSE.
 
       WRITE(msgBuf,'(A)') 
      &      'BATHY_HOMOG_READPARMS: opening data.bathy_homog'

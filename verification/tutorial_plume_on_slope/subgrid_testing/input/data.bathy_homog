@@ -1,3 +1,4 @@
  &BATHY_HOMOG_PARM01
 includeAdvec_Homog=.FALSE.
+nonSquareDomain   =.FALSE.
  /

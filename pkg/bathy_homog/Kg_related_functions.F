@@ -23,46 +23,46 @@ C23456789012345678901234567890123456789012345678901234567890123456789012
 
       END
 
-      SUBROUTINE CONTRACT_Kg(ETA, XI, RESULT)
+      SUBROUTINE CONTRACT_Kg(ETA, XI, a, RESULT)
       IMPLICIT NONE
 #include "EEPARAMS.h"
 
-      _RL ETA, XI
+      _RL ETA, XI, a
       _RL RESULT(2, 2)
       _RL K(2, 2), g0(2,2)
 
       COMMON /DIFFUSION_MATRIX/ K
-      CALL STORE_g0(ETA, XI, g0)
+      CALL STORE_g0(ETA, XI, a, g0)
 
       CALL CONTRACT(K, g0, RESULT)
 
       END
 
 C     Store "1/Kg"- and "Kg/Kg"-type constructions 
-      FUNCTION recip_Kg22(ETA, XI)
+      FUNCTION recip_Kg22(ETA, XI, a)
       IMPLICIT NONE
 #include "EEPARAMS.h"
       
-      _RL ETA, XI
+      _RL ETA, XI, a
       _RL Kg(2,2)
       _RL recip_Kg22
 
-      CALL CONTRACT_Kg(ETA, XI, KG)
+      CALL CONTRACT_Kg(ETA, XI, a, Kg)
 
       recip_Kg22 = 1 / Kg(2,2)
 
       RETURN 
       END
 
-      FUNCTION Kg21_OVER_Kg22(ETA, XI)
+      FUNCTION Kg21_OVER_Kg22(ETA, XI, a)
       IMPLICIT NONE
 #include "EEPARAMS.h"      
 
-      _RL ETA, XI
+      _RL ETA, XI, a
       _RL Kg(2,2)
       _RL Kg21_OVER_Kg22
 
-      CALL CONTRACT_Kg(ETA, XI, KG)
+      CALL CONTRACT_Kg(ETA, XI, a, Kg)
 
       Kg21_OVER_Kg22 = Kg(2,1) / Kg(2,2)
 
@@ -71,33 +71,33 @@ C     Store "1/Kg"- and "Kg/Kg"-type constructions
 
 
 C     Construct helper "constants" c^2_1 and c^1_1
-      SUBROUTINE C21(XI, RESULT)
+      SUBROUTINE C21(XI, a, RESULT)
       IMPLICIT NONE
 #include "EEPARAMS.h"
 
-      _RL XI
+      _RL XI, a
       _RL RESULT
       _RL recip_Kg22
       EXTERNAL recip_Kg22
 
-      CALL AVERAGE(recip_Kg22, XI, RESULT)
+      CALL AVERAGE(recip_Kg22, XI, a, RESULT)
 
       RESULT = 1.0 / RESULT
       
       END
 
-      SUBROUTINE C11(XI, RESULT)
+      SUBROUTINE C11(XI, a, RESULT)
       IMPLICIT NONE
 #include "EEPARAMS.h"
 
-      _RL XI
+      _RL XI, a
       _RL RESULT
       _RL C21_val
       _RL Kg21_OVER_Kg22
       EXTERNAL Kg21_OVER_Kg22
 
-      CALL AVERAGE(Kg21_OVER_Kg22, XI, RESULT)
-      CALL C21(XI, C21_val)
+      CALL AVERAGE(Kg21_OVER_Kg22, XI, a, RESULT)
+      CALL C21(XI, a, C21_val)
 
       RESULT = C21_val * RESULT
       
@@ -107,52 +107,52 @@ C     Construct averaging integrands for gbar
 C     (these would be lambda functions in python)
 C23456789012345678901234567890123456789012345678901234567890123456789012
 
-      FUNCTION g012_OVER_Kg22(ETA, XI)
+      FUNCTION g012_OVER_Kg22(ETA, XI, a)
       IMPLICIT NONE
 #include "EEPARAMS.h"
       
-      _RL ETA, XI
+      _RL ETA, XI, a
       _RL recip_Kg22, g0_OFFDIAG, g012_OVER_Kg22
       
-      g012_OVER_Kg22 = g0_OFFDIAG(ETA, XI) * recip_Kg22(ETA, XI)
+      g012_OVER_Kg22 = g0_OFFDIAG(ETA, XI) * recip_Kg22(ETA, XI, a)
 
       RETURN 
       END     
 
-      FUNCTION g021_MUL_Kg21_OVER_Kg22(ETA, XI)
+      FUNCTION g021_MUL_Kg21_OVER_Kg22(ETA, XI, a)
       IMPLICIT NONE
 #include "EEPARAMS.h"
       
-      _RL ETA, XI
+      _RL ETA, XI, a
       _RL Kg21_OVER_Kg22, g0_OFFDIAG, g021_MUL_Kg21_OVER_Kg22
       
       g021_MUL_Kg21_OVER_Kg22 = g0_OFFDIAG(ETA, XI) 
-     &                        * Kg21_OVER_Kg22(ETA, XI)
+     &                        * Kg21_OVER_Kg22(ETA, XI, a)
 
       RETURN 
       END    
 
-      FUNCTION g022_OVER_Kg22(ETA, XI)
+      FUNCTION g022_OVER_Kg22(ETA, XI, a)
       IMPLICIT NONE
 #include "EEPARAMS.h"
       
-      _RL ETA, XI
+      _RL ETA, XI, a
       _RL recip_Kg22, g0_22, g022_OVER_Kg22
       
-      g022_OVER_Kg22 = g0_22() * recip_Kg22(ETA, XI)
+      g022_OVER_Kg22 = g0_22(a) * recip_Kg22(ETA, XI, a)
 
       RETURN 
       END   
 
-      FUNCTION g022_MUL_Kg21_OVER_Kg22(ETA, XI)
+      FUNCTION g022_MUL_Kg21_OVER_Kg22(ETA, XI, a)
       IMPLICIT NONE
 #include "EEPARAMS.h"
       
-      _RL ETA, XI
+      _RL ETA, XI, a
       _RL Kg21_OVER_Kg22, g0_22, g022_MUL_Kg21_OVER_Kg22
       
-      g022_MUL_Kg21_OVER_Kg22 = g0_22() 
-     &                        * Kg21_OVER_Kg22(ETA, XI)
+      g022_MUL_Kg21_OVER_Kg22 = g0_22(a) 
+     &                        * Kg21_OVER_Kg22(ETA, XI, a)
 
       RETURN 
       END  

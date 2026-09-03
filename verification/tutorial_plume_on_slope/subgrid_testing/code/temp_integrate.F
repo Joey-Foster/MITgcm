@@ -148,6 +148,7 @@ C     kkey :: tape key (level and tile dependent)
       _RL trAdvCFL(3,nSx,nSy)
       _RL Kgbar(2,2)
       _RL diffKhT_copy
+      SAVE diffKhT_copy
       _RL kappaRk_copy(1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr)
 #endif
 
@@ -269,8 +270,8 @@ CADJ STORE kappaRk = comlev1_bibj, key = tkey, kind = isbyte
       ENDIF
       
       DO k=1,Nr
-       DO j=1-OLy,sNy+OLy
-        DO i=1-OLx,sNx+OLx
+       DO j=1,sNy
+        DO i=1,sNx
          IF (0.0 .LT. hFacC(i,j,k,bi,bj) .AND.
      &          hFacC(i,j,k,bi,bj) .LT. 1.0) THEN
          
@@ -287,10 +288,17 @@ CADJ STORE kappaRk = comlev1_bibj, key = tkey, kind = isbyte
      &                             kappaRk_copy(i,j,k))
             ENDIF
             
-            CALL CONTRACT_Kgbar(0.5, Kgbar)
+            IF ( nonSquareDomain ) THEN
+C             a = hFacC * delZ/delX 
+              CALL CONTRACT_Kgbar(0.5, Kgbar, 
+     &              DBLE(hFacC(i,j,k,bi,bj)*delR(k)/delX(i)) )
+            ELSE
+C             a = 1.0
+              CALL CONTRACT_Kgbar(0.5, Kgbar, 1.0D0)
+            ENDIF
             
             diffKhT = Kgbar(1,1) /* horizontal diffusion applies to the whole grid...? */
-C           what to assign to K(1,2), K(2,1)?  
+C           what to assign to Kgbar(1,2), Kgbar(2,1)?  
             kappaRk(i,j,k) = Kgbar(2,2)
           
          ENDIF
