@@ -31,10 +31,22 @@ C23456789012345678901234567890123456789012345678901234567890123456789012
       _RL RESULT(2, 2)
       _RL K(2, 2), g0(2,2)
 
+      LOGICAL IS_POSDEF
+      COMMON /POSDEF_FLAG/ IS_POSDEF
+
       COMMON /DIFFUSION_MATRIX/ K
       CALL STORE_g0(ETA, XI, a, g0)
 
       CALL CONTRACT(K, g0, RESULT)
+
+C     Even after implicit K insertion, K(2,2) may be zero
+C     and hence K not be positive definite. Therefore,
+      CALL CHECK_POSDEF(RESULT, IS_POSDEF)
+      IF ( .NOT.IS_POSDEF ) THEN 
+       PRINT*, "Kg0 not pos def!", 
+     &        RESULT(1,1), RESULT(1,2), RESULT(2,1), RESULT(2,2)  
+      ENDIF
+
 
       END
 

@@ -118,18 +118,17 @@ C23456789012345678901234567890123456789012345678901234567890123456789012
       _RL K(2, 2), gbar(2,2)
       _RL a
 
-      COMMON /DIFFUSION_MATRIX/ K
+      LOGICAL IS_POSDEF
 
-C     if, even after implicit K insertion,
-C     K(2,2) = 0, ignore the homog to avoid
-C     DIV_ZERO errors and set RESULT to K. 
-C     *** TO DO: this should really be a 
-C     PosDef check, not just if K(2,2) = 0 ***
-      IF ( K(2,2) .EQ. 0.0 ) THEN
-       RESULT(1,1) = K(1,1)
-       RESULT(1,2) = K(1,2)
-       RESULT(2,1) = K(2,1)
-       RESULT(2,2) = K(2,2)
+      COMMON /DIFFUSION_MATRIX/ K
+      COMMON /POSDEF_FLAG/ IS_POSDEF
+
+C     if Kg0 was not pos def, do not attempt to average 
+      IF ( .NOT.IS_POSDEF ) THEN
+        RESULT(1,1) = K(1,1)
+        RESULT(1,2) = K(1,2)
+        RESULT(2,1) = K(2,1)
+        RESULT(2,2) = K(2,2)
       
       ELSE
 
