@@ -119,17 +119,36 @@ C23456789012345678901234567890123456789012345678901234567890123456789012
       _RL a
 
       LOGICAL IS_POSDEF
+      _RL Kg0(2,2)
+      INTEGER i 
 
       COMMON /DIFFUSION_MATRIX/ K
-      COMMON /POSDEF_FLAG/ IS_POSDEF
 
-C     if Kg0 was not pos def, do not attempt to average 
+C     #####################################
+C     Need to test posdefness for Kg0
+C     *before* calling STORE_gbar() so
+C     small bit of code duplication here...
+
+      DO i=0,1000
+C                 all ETA values used by AVERAGE()
+C                            \/    
+       CALL CONTRACT_Kg(i*1.0/1000, XI, a, Kg0)
+
+       CALL CHECK_POSDEF(Kg0, IS_POSDEF)
+       IF ( .NOT.IS_POSDEF ) THEN
+        PRINT*, "Kg0 not pos def!"
+        EXIT 
+       ENDIF
+
+      ENDDO
+
       IF ( .NOT.IS_POSDEF ) THEN
-        RESULT(1,1) = K(1,1)
-        RESULT(1,2) = K(1,2)
-        RESULT(2,1) = K(2,1)
-        RESULT(2,2) = K(2,2)
-      
+       RESULT(1,1) = K(1,1)
+       RESULT(1,2) = K(1,2)
+       RESULT(2,1) = K(2,1)
+       RESULT(2,2) = K(2,2)
+
+C     #####################################     
       ELSE
 
             CALL STORE_gbar(XI, a, gbar)
