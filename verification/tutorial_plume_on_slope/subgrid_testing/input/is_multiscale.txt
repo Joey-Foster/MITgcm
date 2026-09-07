@@ -1,2 +1,2 @@
 # Reminder file saved with input data generation script
-is_multiscale=True
+is_multiscale=Trueepsilon range: 0.253034 to 0.749990
