@@ -1,4 +1,9 @@
  &BATHY_HOMOG_PARM01
 includeAdvec_Homog=.FALSE.
 nonSquareDomain   =.FALSE.
+#gamma = 0.15
+# gamma is my notation for boundary rescaling.
+# Give a value other than 1.0D0 to activate CHECK_POSDEF()
+# Warning: required matrix currently fails this check a lot
+# which disables the homog entirely... WIP.
  /

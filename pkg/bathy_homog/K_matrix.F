@@ -19,21 +19,21 @@ C23456789012345678901234567890123456789012345678901234567890123456789012
 
       END
 
-      SUBROUTINE USE_IMPLICIT_K(dx, dz, u, w, courant_x, courant_z)
+      SUBROUTINE USE_IMPLICIT_K(dx, dz, dt, u, w)
       IMPLICIT NONE
 #include "EEPARAMS.h"
 
-      _RL dx, dz, u, w, courant_x, courant_z
+      _RL dx, dz, dt, u, w
       _RL implicit_diffKh, implicit_diffKz
       _RL K(2,2)
 
       COMMON /DIFFUSION_MATRIX/ K
 
 C     use upwind numerical diffusion for now (very overdamped)
-      implicit_diffKh = 0.5 * ABS(u) * dx * (1 - courant_x)
-      implicit_diffKz = 0.5 * ABS(w) * dz * (1 - courant_z)
+      implicit_diffKh = 0.5 * ABS(u) * dx * (1 - ABS(u)*dt/dx)
+      implicit_diffKz = 0.5 * ABS(w) * dz * (1 - ABS(w)*dt/dz)
 
-      PRINT*, "bathydebug", dx, dz, courant_x, courant_z
+      PRINT*, "bathydebug", dx, dz, ABS(u)*dt/dx, ABS(w)*dt/dz
 
       K(1,1) = implicit_diffKh
       K(1,2) = 0.0

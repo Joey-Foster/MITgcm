@@ -112,6 +112,7 @@ C23456789012345678901234567890123456789012345678901234567890123456789012
       SUBROUTINE CONTRACT_Kgbar(XI, RESULT, a)
       IMPLICIT NONE
 #include "EEPARAMS.h"
+#include "BATHY_HOMOG.h"
 
       _RL XI
       _RL RESULT(2, 2)
@@ -124,6 +125,7 @@ C23456789012345678901234567890123456789012345678901234567890123456789012
 
       COMMON /DIFFUSION_MATRIX/ K
 
+      IF ( gamma .NE. 1.0D0) THEN
 C     #####################################
 C     Need to test posdefness for Kg0
 C     *before* calling STORE_gbar() so
@@ -137,18 +139,32 @@ C                            \/
        CALL CHECK_POSDEF(Kg0, IS_POSDEF)
        IF ( .NOT.IS_POSDEF ) THEN
         PRINT*, "Kg0 not pos def!"
+        PRINT*, Kg0(1,1), Kg0(1,2), Kg0(2,1), Kg0(2,2)
         EXIT 
        ENDIF
 
       ENDDO
+C     ##################################### 
+      ELSEIF ( K(2,2) .EQ. 0.0D0 ) THEN
+C        strictly speaking this should still
+C        test Kg0 not K, but this is already 
+C        a hack and this way doesn't require 
+C        more CONTRACT_Kg() calls
+
+C        reuse of logical posdef to avoid clutter
+         IS_POSDEF = .FALSE.
+      ELSE
+C        reuse of logical posdef to avoid clutter
+         IS_POSDEF = .TRUE. 
+      ENDIF
 
       IF ( .NOT.IS_POSDEF ) THEN
+C      disable homog
        RESULT(1,1) = K(1,1)
        RESULT(1,2) = K(1,2)
        RESULT(2,1) = K(2,1)
        RESULT(2,2) = K(2,2)
-
-C     #####################################     
+  
       ELSE
 
             CALL STORE_gbar(XI, a, gbar)

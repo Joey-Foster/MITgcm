@@ -145,7 +145,6 @@ C     kkey :: tape key (level and tile dependent)
 #ifdef ALLOW_BATHY_HOMOG
 #include "SET_GRID.h"
 #include "BATHY_HOMOG.h"
-      _RL trAdvCFL(3,nSx,nSy)
       _RL Kgbar(2,2)
       _RL diffKhT_copy
       SAVE diffKhT_copy
@@ -279,10 +278,8 @@ CADJ STORE kappaRk = comlev1_bibj, key = tkey, kind = isbyte
      &         kappaRk_copy(i,j,k) .EQ. 0.0) THEN
      
                CALL USE_IMPLICIT_K(
-     &                    delX(i), delR(k),
-     &                    uFld(i,j,k), wFld(i,j,k),
-     &                    trAdvCFL(1,bi,bj), 
-     &                    trAdvCFL(3,bi,bj))
+     &                    delX(i), delR(k), deltaT,
+     &                    uFld(i,j,k), wFld(i,j,k))
             ELSE
                CALL USE_EXPLICIT_K(diffKhT_copy, 
      &                             kappaRk_copy(i,j,k))
