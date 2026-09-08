@@ -145,10 +145,16 @@ C     kkey :: tape key (level and tile dependent)
 #ifdef ALLOW_BATHY_HOMOG
 #include "SET_GRID.h"
 #include "BATHY_HOMOG.h"
+C#include "MONITOR.h"
+
+C     Diffusion local vars
       _RL Kgbar(2,2)
       _RL diffKhT_copy
       SAVE diffKhT_copy
       _RL kappaRk_copy(1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr)
+      
+C     Advection local vars
+      _RS x_n, x_np1, z_np1, z_np1_copy
 #endif
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
@@ -285,7 +291,7 @@ CADJ STORE kappaRk = comlev1_bibj, key = tkey, kind = isbyte
      &                             kappaRk_copy(i,j,k))
             ENDIF
             
-            IF ( nonSquareDomain ) THEN
+            IF ( includeAdvec_Homog ) THEN
 C             a = hFacC * delZ/delX 
               CALL CONTRACT_Kgbar(0.5, Kgbar, 
      &              DBLE(hFacC(i,j,k,bi,bj)*delR(k)/delX(i)) )
@@ -381,25 +387,41 @@ CADJ STORE gtNm1(:,:,k,bi,bj)  = comlev1_bibj_k, key=kkey, kind = isbyte
      I                k, bi, bj, myThid )
      
 #ifdef ALLOW_BATHY_HOMOG
-       IF ( includeAdvec_Homog ) THEN
+C      To ensure the velocities are divergence free, the modifications made 
+C      here must be called *before* MOMENTUM_CORRECTION_STEP() and hence
+C      this IF statement is only compatible with StaggerTimeStep=.FALSE.
+C      (c.f. bathy_homog_check.F)
+       IF ( useBATHY_HOMOG .AND. includeAdvec_Homog ) THEN
        
-C      ROUGH PLAN:
-C      copy corner coords for x and z (x_n/np1, z_n/np1 in schematic notation)
-C      pass copied corner coords into FLAT2ROT_coords() to compute tilde{x,z}
-C      pass uTrans, rTrans from above CALC_ADV_FLOW call into velTrans_unitsquare()
-C      
-C      what to do about MAP2XI_coords() ?
-       
-       
-        DO j=1-OLy,sNy+OLy
-         DO i=1-OLx,sNx+OLx
+        DO j=1,sNy
+         DO i=1,sNx
           IF (0.0 .LT. hFacC(i,j,k,bi,bj) .AND.
      &          hFacC(i,j,k,bi,bj) .LT. 1.0) THEN
+     
+C          copy coordinates of the current cell 
+     	   x_n = xG(i,j,bi,bj)
+     	   x_np1 = xG(i+1,j,bi,bj)
+     	   z_np1 = rF(k) /* k loops from bottom to top */
+     	   z_np1_copy = rF(k)
 
+C          rotate (x_n, z_np1)
            CALL FLAT2ROT_coords(
-     &                     xG(i,j,bi,bj), rF(k),
-     &                     delX(i), delR(k),
-     &                     hFacC(i,j,k,bi,bj), hFacW(i,j,k,bi,bj))
+     U                     x_n, z_np1,
+     I                     delX(i), delR(k),
+     I                     hFacC(i,j,k,bi,bj), hFacW(i,j,k,bi,bj))
+     
+C          rotate (x_np1, z_np1)
+           CALL FLAT2ROT_coords(
+     U                     x_np1, z_np1_copy,
+     I                     delX(i), delR(k),
+     I                     hFacC(i,j,k,bi,bj), hFacW(i,j,k,bi,bj))
+     
+C          update in-place (!) uTrans and wTrans   
+           CALL velTrans_unitsquare(
+     I                   x_n, x_np1, z_np1,
+     I                   delX(i), delR(k),
+     I                   hFacC(i,j,k,bi,bj), hFacW(i,j,k,bi,bj),
+     U                   uTrans(i,j), uTrans(i+1,j), rTrans(i,j))
       
           ENDIF
          ENDDO

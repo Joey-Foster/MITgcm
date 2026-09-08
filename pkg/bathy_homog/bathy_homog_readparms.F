@@ -29,7 +29,7 @@ C     iUnit      :: Work variable for IO unit number
       INTEGER iUnit
 
       NAMELIST /BATHY_HOMOG_PARM01/ 
-     &    includeAdvec_Homog, nonSquareDomain, gamma
+     &    includeAdvec_Homog, gamma
 
       IF ( .NOT.useBATHY_HOMOG ) THEN
 C-    pkg BATHY_HOMOG is not used
@@ -45,7 +45,6 @@ C     print a (weak) warning if data.bathy_homog is found
 
 C--   Default values for BATHY_HOMOG
       includeAdvec_Homog = .FALSE.
-      nonSquareDomain    = .FALSE.
       gamma              = 1.0D0
 
       WRITE(msgBuf,'(A)') 

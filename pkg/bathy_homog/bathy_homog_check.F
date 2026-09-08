@@ -29,22 +29,20 @@ C     msgBuf   :: Informational/error message buffer
 
       _BEGIN_MASTER(myThid)
 
-       WRITE(msgBuf,'(A)') 'BATHY_HOMOG_CHECK: #define BATHY_HOMOG'
+       WRITE(msgBuf,'(A)') 'BATHY_HOMOG_CHECK: #define ALLOW_BATHY_HOMOG'
        CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &                     SQUEEZE_RIGHT, myThid )
 
 C--  Check parameters:
 
-C-     Put stops here if some flags are wrongly chosen.
-C-     For example, require this package to use tempStepping
-C       IF ( .NOT.tempStepping .AND. myPa_applyTendT ) THEN
-C        WRITE(msgBuf,'(A)') 'An example requirement is:'
-C        CALL PRINT_ERROR( msgBuf, myThid )
-C        WRITE(msgBuf,'(A)') 'myPa_applyTendT needs tempStepping=.true.'
-C        CALL PRINT_ERROR( msgBuf, myThid )
-C        CALL ALL_PROC_DIE( 0 )
-C        STOP 'ABNORMAL END: S/R BATHY_HOMOG_CHECK'
-C       ENDIF
+       IF ( staggerTimeStep .AND. includeAdvec_Homog ) THEN
+        WRITE(msgBuf,'(3A)') 'BATHY_HOMOG_CHECK:',
+     &                       'includeAdvec_Homog is ',
+     &                       'incompatible with staggerTimeStep'
+        CALL PRINT_ERROR( msgBuf, myThid )
+        CALL ALL_PROC_DIE( 0 )
+        STOP 'ABNORMAL END: S/R BATHY_HOMOG_CHECK'
+       ENDIF
 
       _END_MASTER(myThid)
 

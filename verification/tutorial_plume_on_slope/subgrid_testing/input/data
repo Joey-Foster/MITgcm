@@ -32,7 +32,7 @@
 #- not safe to use globalFiles in multi-processors runs
 #globalFiles=.TRUE.,
  plotLevel=0,
- staggerTimeStep=.TRUE.,
+ staggerTimeStep=.FALSE.,
  /
 
 # Elliptic solver parameters

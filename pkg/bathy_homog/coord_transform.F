@@ -43,6 +43,7 @@ C     calculated for.
       SUBROUTINE MAP2XI_coords(X, Z, delX, delZ, hFacC, hFacW)
       IMPLICIT NONE
 C     convert rotated (X,Z) -> (x_1, x_2) rescaled -> (xi_1, xi_2)
+C     **maybe unecessary? Currently not called in any case...**
 #include "EEPARAMS.h"
 
       _RS X, Z
