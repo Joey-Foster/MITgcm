@@ -33,7 +33,14 @@ C     use upwind numerical diffusion for now (very overdamped)
       implicit_diffKh = 0.5 * ABS(u) * dx * (1 - ABS(u)*dt/dx)
       implicit_diffKz = 0.5 * ABS(w) * dz * (1 - ABS(w)*dt/dz)
 
-      PRINT*, "bathydebug", dx, dz, ABS(u)*dt/dx, ABS(w)*dt/dz
+      PRINT*, "bathydebug_x", u, dx, ABS(u)*dt/dx
+      PRINT*, "bathydebug_z", w, dz, ABS(w)*dt/dz      
+
+C     Also, this is just hardcoding c=u*dt/dx and not using 
+C     the in-built MON_CALC_ADVCFL_GLOB() which uses the flux
+C     instead (c=u_flux*dt/V) as this would require setting 
+C     monitorFreq = deltaT in data.&PARM03 namelist which 
+C     would print a lot of output for long runs. 
 
       K(1,1) = implicit_diffKh
       K(1,2) = 0.0
