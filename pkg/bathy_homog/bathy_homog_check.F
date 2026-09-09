@@ -29,7 +29,8 @@ C     msgBuf   :: Informational/error message buffer
 
       _BEGIN_MASTER(myThid)
 
-       WRITE(msgBuf,'(A)') 'BATHY_HOMOG_CHECK: #define ALLOW_BATHY_HOMOG'
+       WRITE(msgBuf,'(2A)') 'BATHY_HOMOG_CHECK:',
+     &                      '#define ALLOW_BATHY_HOMOG'
        CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &                     SQUEEZE_RIGHT, myThid )
 

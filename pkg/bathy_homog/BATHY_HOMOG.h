@@ -14,8 +14,8 @@ C     BATHY_HOMOG parameters
       LOGICAL includeAdvec_Homog
       _RL gamma
 
-      COMMON /BATHY_HOMOG_PARAMS/ 
-     &     includeAdvec_Homog, gamma
+      COMMON /BATHY_HOMOG_PARAMS_L/ includeAdvec_Homog
+      COMMON /BATHY_HOMOG_PARAMS_DP/ gamma
 
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
