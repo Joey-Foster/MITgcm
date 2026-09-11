@@ -104,13 +104,11 @@ else
     FOPTIM="-O0 -fp-model source -noalign $PROCF"
   else                          #- development/check options:
    #FFLAGS="$FFLAGS -debug all -debug-parameters all -fp-model strict"
-    FOPTIM="-Og -g -fbacktrace $PROCF"
+    FOPTIM="-O0 -noalign -g -traceback $PROCF"
     NOOPTFLAGS=$FOPTIM
     NOOPTFILES='adread_adwrite.F'
-    FOPTIM="$FOPTIM -Wall -Wextra"
-    FOPTIM="$FOPTIM -Wno-unused-dummy-argument -Wno-unused-parameter -Wno-tabs"
-   #FOPTIM="$FOPTIM -Wcompare-reals"
-    FOPTIM="$FOPTIM -fcheck=all"
+    FOPTIM="$FOPTIM -warn all -warn nounused"
+    FOPTIM="$FOPTIM -fpe0 -ftz -fp-stack-check -check all -ftrapuv"
   fi
 fi
 
