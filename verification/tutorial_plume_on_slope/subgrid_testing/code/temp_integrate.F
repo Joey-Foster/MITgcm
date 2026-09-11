@@ -152,6 +152,7 @@ C     Diffusion local vars
       _RL diffKhT_copy
       SAVE diffKhT_copy
       _RL kappaRk_copy(1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr)
+      _RL a
       
 C     Advection local vars
       _RS x_n, x_np1, z_np1, z_np1_copy
@@ -292,13 +293,12 @@ CADJ STORE kappaRk = comlev1_bibj, key = tkey, kind = isbyte
             ENDIF
             
             IF ( includeAdvec_Homog ) THEN
-C             a = hFacC * delZ/delX 
-              CALL CONTRACT_Kgbar(0.5, Kgbar, 
-     &              DBLE(hFacC(i,j,k,bi,bj)*delR(k)/delX(i)) )
+              a = DBLE(hFacC(i,j,k,bi,bj)*delR(k)/delX(i))
             ELSE
-C             a = 1.0
-              CALL CONTRACT_Kgbar(0.5, Kgbar, 1.0D0)
+              a = 1.0D0
             ENDIF
+
+            CALL CONTRACT_Kgbar(0.5, Kgbar, a)
             
             diffKhT = Kgbar(1,1) /* horizontal diffusion applies to the whole grid...? */
 C           what to assign to Kgbar(1,2), Kgbar(2,1)?  

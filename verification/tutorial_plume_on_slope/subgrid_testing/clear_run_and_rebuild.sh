@@ -2,6 +2,5 @@
 
 rm -r run/*
 cd build
-make Clean && \
-make depend && \
+make clean && \
 make -j 3 
