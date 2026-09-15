@@ -229,6 +229,7 @@ C-    Tracer tendency needs to be set to zero (moved here from gad_calc_rhs):
        DO j=1-OLy,sNy+OLy
         DO i=1-OLx,sNx+OLx
          kappaRk(i,j,k) = 0. _d 0
+         kappaRk_copy(i,j,k) = 0. _d 0
         ENDDO
        ENDDO
       ENDDO
@@ -293,7 +294,7 @@ CADJ STORE kappaRk = comlev1_bibj, key = tkey, kind = isbyte
             ENDIF
             
             IF ( includeAdvec_Homog ) THEN
-              a = DBLE(hFacC(i,j,k,bi,bj)*delR(k)/delX(i))
+              a = delR(k)/delX(i)
             ELSE
               a = 1.0D0
             ENDIF
@@ -399,20 +400,22 @@ C      (c.f. bathy_homog_check.F)
      &          hFacC(i,j,k,bi,bj) .LT. 1.0) THEN
      
 C          copy coordinates of the current cell 
-     	   x_n = xG(i,j,bi,bj)
-     	   x_np1 = xG(i+1,j,bi,bj)
-     	   z_np1 = rF(k) /* k loops from bottom to top */
-     	   z_np1_copy = rF(k)
+           x_n = xG(i,j,bi,bj)
+           x_np1 = xG(i+1,j,bi,bj)
+           z_np1 = rF(k) /* k loops from bottom to top */
+           z_np1_copy = rF(k)
 
 C          rotate (x_n, z_np1)
            CALL FLAT2ROT_coords(
      U                     x_n, z_np1,
+     I                     x_np1, z_np1,
      I                     delX(i), delR(k),
      I                     hFacC(i,j,k,bi,bj), hFacW(i,j,k,bi,bj))
      
 C          rotate (x_np1, z_np1)
            CALL FLAT2ROT_coords(
      U                     x_np1, z_np1_copy,
+     I                     x_np1, z_np1_copy,
      I                     delX(i), delR(k),
      I                     hFacC(i,j,k,bi,bj), hFacW(i,j,k,bi,bj))
      
@@ -420,7 +423,8 @@ C          update in-place (!) uTrans and wTrans
            CALL velTrans_unitsquare(
      I                   x_n, x_np1, z_np1,
      I                   delX(i), delR(k),
-     I                   hFacC(i,j,k,bi,bj), hFacW(i,j,k,bi,bj),
+     I                   recip_ hFacC(i,j,k,bi,bj), 
+     I                   recip_hFacW(i,j,k,bi,bj),
      U                   uTrans(i,j), uTrans(i+1,j), rTrans(i,j))
       
           ENDIF
