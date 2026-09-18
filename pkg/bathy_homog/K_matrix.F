@@ -4,16 +4,27 @@ C23456789012345678901234567890123456789012345678901234567890123456789012
       SUBROUTINE USE_EXPLICIT_K(diffKh, diffKz)
       IMPLICIT NONE
 #include "EEPARAMS.h"
+#include "BATHY_HOMOG.h"
 
       _RL diffKh, diffKz
       _RL K(2,2)
 
       COMMON /DIFFUSION_MATRIX/ K
 
-      K(1,1) = diffKh
-      K(1,2) = 0.0
-      K(2,1) = 0.0
-      K(2,2) = diffKz
+      IF ( usePosDefHack ) THEN
+C     destructively force K to be isotropic
+C     and set to the vertical diffusion coefficient
+C     as this is the smaller of the two
+       K(1,1) = diffKz
+       K(1,2) = 0.0
+       K(2,1) = 0.0
+       K(2,2) = diffKz
+      ELSE
+       K(1,1) = diffKh
+       K(1,2) = 0.0
+       K(2,1) = 0.0
+       K(2,2) = diffKz
+      ENDIF
 
       PRINT*, "bathy homog Kread=", K(1,1), K(2,1), K(2,2)
 
@@ -22,6 +33,7 @@ C23456789012345678901234567890123456789012345678901234567890123456789012
       SUBROUTINE USE_IMPLICIT_K(dx, dz, dt, u, w)
       IMPLICIT NONE
 #include "EEPARAMS.h"
+#include "BATHY_HOMOG.h"
 
       _RL dx, dz, dt, u, w
       _RL implicit_diffKh, implicit_diffKz
@@ -36,16 +48,26 @@ C     use upwind numerical diffusion for now (very overdamped)
       PRINT*, "bathydebug_x", u, dx, ABS(u)*dt/dx
       PRINT*, "bathydebug_z", w, dz, ABS(w)*dt/dz      
 
-C     Also, this is just hardcoding c=u*dt/dx and not using 
+C     Also, this is just hardcoding c=|u|*dt/dx and not using 
 C     the in-built MON_CALC_ADVCFL_GLOB() which uses the flux
 C     instead (c=u_flux*dt/V) as this would require setting 
 C     monitorFreq = deltaT in data.&PARM03 namelist which 
 C     would print a lot of output for long runs. 
 
-      K(1,1) = implicit_diffKh
-      K(1,2) = 0.0
-      K(2,1) = 0.0
-      K(2,2) = implicit_diffKz
+      IF ( usePosDefHack ) THEN
+C     destructively force K to be isotropic
+C     and set to the vertical diffusion coefficient
+C     as this is the smaller of the two
+       K(1,1) = implicit_diffKz
+       K(1,2) = 0.0
+       K(2,1) = 0.0
+       K(2,2) = implicit_diffKz
+      ELSE
+       K(1,1) = implicit_diffKh
+       K(1,2) = 0.0
+       K(2,1) = 0.0
+       K(2,2) = implicit_diffKz
+      ENDIF
 
       PRINT*, "bathy homog Korig=", K(1,1), K(2,1), K(2,2)
 
@@ -77,7 +99,7 @@ C     a > 0 and ad-bc > 0.
 
       a = SYM(1,1)
       b = SYM(1,2)
-      C = SYM(2,1)
+      c = SYM(2,1)
       d = SYM(2,2)
 
       IF ( a .GT. 0.0D0 .AND. a*d - b*c .GT. 0.0D0 ) THEN 
@@ -86,7 +108,31 @@ C     a > 0 and ad-bc > 0.
        FLAG = .FALSE. 
       ENDIF
       
-      RETURN
       END
 
+      SUBROUTINE FIND_K_MAXDIFF(Kgbar11, Kgbar22, 
+     &                          K11_diff, K22_diff, FLAG1, FLAG2)
+      IMPLICIT NONE
+#include "EEPARAMS.h"
+      
+      _RL Kgbar11, Kgbar22, K11_diff, K22_diff
+      _RL K(2,2)
+      LOGICAL FLAG1, FLAG2
+
+      COMMON /DIFFUSION_MATRIX/ K
+
+      IF (ABS(K(1,1) - Kgbar11) .GT. K11_diff) THEN
+       K11_diff = ABS(K(1,1) - Kgbar11)
+       FLAG1 = .TRUE.
+      ELSE
+       FLAG1 = .FALSE.
+      ENDIF
+      IF (ABS(K(2,2) - Kgbar22) .GT. K22_diff) THEN
+       K22_diff = ABS(K(2,2) - Kgbar22)
+       FLAG2 = .TRUE.
+      ELSE
+       FLAG2 = .FALSE.
+      ENDIF
+
+      END
       

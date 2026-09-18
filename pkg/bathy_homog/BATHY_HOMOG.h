@@ -12,9 +12,10 @@ CEOP
 
 C     BATHY_HOMOG parameters
       LOGICAL includeAdvec_Homog
+      LOGICAL usePosDefHack
       _RL gamma
 
-      COMMON /BATHY_HOMOG_PARAMS_L/ includeAdvec_Homog
+      COMMON /BATHY_HOMOG_PARAMS_L/ includeAdvec_Homog, usePosDefHack
       COMMON /BATHY_HOMOG_PARAMS_DP/ gamma
 
 

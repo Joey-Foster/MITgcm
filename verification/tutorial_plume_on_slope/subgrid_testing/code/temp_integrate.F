@@ -153,6 +153,10 @@ C     Diffusion local vars
       SAVE diffKhT_copy
       _RL kappaRk_copy(1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr)
       _RL a
+
+      _RL maxK11_diff, maxK22_diff
+      INTEGER maxK11_diff_idx(3), maxK22_diff_idx(3)
+      LOGICAL K11_diff_updated, K22_diff_updated
       
 C     Advection local vars
       _RS x_n, x_np1, z_np1, z_np1_copy
@@ -275,6 +279,9 @@ CADJ STORE kappaRk = comlev1_bibj, key = tkey, kind = isbyte
       IF ( myIter .EQ. 1 ) THEN
         diffKhT_copy = diffKhT
       ENDIF
+
+      maxK11_diff = 0.0D0
+      maxK22_diff = 0.0D0
       
       DO k=1,Nr
        DO j=1,sNy
@@ -300,6 +307,23 @@ CADJ STORE kappaRk = comlev1_bibj, key = tkey, kind = isbyte
             ENDIF
 
             CALL CONTRACT_Kgbar(0.5, Kgbar, a)
+
+            CALL FIND_K_MAXDIFF(Kgbar(1,1), Kgbar(2,2),
+     &                          maxK11_diff, maxK22_diff,
+     &                          K11_diff_updated, K22_diff_updated)
+
+            IF (K11_diff_updated) THEN
+                maxK11_diff_idx(1) = i
+                maxK11_diff_idx(2) = j
+                maxK11_diff_idx(3) = k
+            ENDIF
+
+            IF (K22_diff_updated) THEN
+                maxK22_diff_idx(1) = i
+                maxK22_diff_idx(2) = j
+                maxK22_diff_idx(3) = k
+            ENDIF
+
             
             diffKhT = Kgbar(1,1) /* horizontal diffusion applies to the whole grid...? */
 C           what to assign to Kgbar(1,2), Kgbar(2,1)?  
@@ -309,6 +333,11 @@ C           what to assign to Kgbar(1,2), Kgbar(2,1)?
         ENDDO
        ENDDO
       ENDDO
+
+      PRINT*, "bathy homog maxK11_diff", maxK11_diff, 
+     &      maxK11_diff_idx(1), maxK11_diff_idx(2), maxK11_diff_idx(3)
+      PRINT*, "bathy homog maxK22_diff", maxK22_diff,
+     &      maxK22_diff_idx(1), maxK22_diff_idx(2), maxK22_diff_idx(3)
       
       ENDIF
 

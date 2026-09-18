@@ -125,12 +125,10 @@ C23456789012345678901234567890123456789012345678901234567890123456789012
 
       COMMON /DIFFUSION_MATRIX/ K
 
-      IF ( gamma .NE. 1.0D0) THEN
 C     #####################################
 C     Need to test posdefness for Kg0
 C     *before* calling STORE_gbar() so
 C     small bit of code duplication here...
-
       DO i=0,1000
 C                 all ETA values used by AVERAGE()
 C                            \/    
@@ -145,17 +143,12 @@ C                            \/
 
       ENDDO
 C     ##################################### 
-      ELSEIF ( K(2,2) .EQ. 0.0D0 ) THEN
-C        strictly speaking this should still
-C        test Kg0 not K, but this is already 
-C        a hack and this way doesn't require 
-C        more CONTRACT_Kg() calls
-
-C        reuse of logical posdef to avoid clutter
-         IS_POSDEF = .FALSE.
-      ELSE
-C        reuse of logical posdef to avoid clutter
-         IS_POSDEF = .TRUE. 
+      IF ( K(2,2) .EQ. 0.0D0 ) THEN
+C        very dirty hack to avoid DIV_ZERO
+C        error. (In principle, this should 
+C        only trigger if K is identically zero,
+C        which happens sufficiently rarely (?) )       
+         IS_POSDEF = .FALSE. 
       ENDIF
 
       IF ( .NOT.IS_POSDEF ) THEN
@@ -164,12 +157,19 @@ C      disable homog
        RESULT(1,2) = K(1,2)
        RESULT(2,1) = K(2,1)
        RESULT(2,2) = K(2,2)
-  
       ELSE
 
             CALL STORE_gbar(XI, a, gbar)
 
             CALL CONTRACT(K, gbar, RESULT)
+
+            IF ( includeAdvec_Homog ) THEN
+C           rescale dimensionFULL diffusion back
+C           to undo coordinate transform shenanigans
+C           **TODO: Come back to this to check if this is actually the right rescaling**
+            RESULT(1,1) = RESULT(1,1) * a
+            RESULT(2,2) = RESULT(2,2) * 1/a
+            ENDIF
             
       ENDIF
       

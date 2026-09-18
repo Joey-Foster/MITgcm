@@ -98,13 +98,9 @@ C     modifies transport velocites INPLACE!
       PRINT*, "orig uTrans_i, uTrans_ip1, wTrans_i", 
      &              uTrans_i, uTrans_ip1, wTrans_i
 
-      PRINT*, "recip_hFacW, delZ", recip_hFacW, delZ
-
       uL = (uTrans_i / delZ) * recip_hFacW
       uR = (uTrans_ip1 / delZ) * recip_hFacC
       uT = wTrans_i / delX
-
-      PRINT*, "uL, uR, uT", uL, uR, uT
 
       uTrans_i = -uL * ((x_np1 + delX) / delX) 
      &           + uR * ((x_n + delX) / delX)
