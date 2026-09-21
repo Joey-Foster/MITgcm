@@ -49,7 +49,7 @@ C     Store "1/Kg"- and "Kg/Kg"-type constructions
 
       CALL CONTRACT_Kg(ETA, XI, a, Kg)
 
-      recip_Kg22 = 1 / Kg(2,2)
+      recip_Kg22 = 1.0D0 / Kg(2,2)
 
       RETURN 
       END
@@ -82,7 +82,7 @@ C     Construct helper "constants" c^2_1 and c^1_1
 
       CALL AVERAGE(recip_Kg22, XI, a, RESULT)
 
-      RESULT = 1.0 / RESULT
+      RESULT = 1.0D0 / RESULT
       
       END
 

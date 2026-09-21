@@ -132,7 +132,7 @@ C     small bit of code duplication here...
       DO i=0,1000
 C                 all ETA values used by AVERAGE()
 C                            \/    
-       CALL CONTRACT_Kg(i*1.0/1000, XI, a, Kg0)
+       CALL CONTRACT_Kg(i*1.0D0/1000, XI, a, Kg0)
 
        CALL CHECK_POSDEF(Kg0, IS_POSDEF)
        IF ( .NOT.IS_POSDEF ) THEN
