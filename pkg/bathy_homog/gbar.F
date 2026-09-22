@@ -129,7 +129,7 @@ C     #####################################
 C     Need to test posdefness for Kg0
 C     *before* calling STORE_gbar() so
 C     small bit of code duplication here...
-      DO i=0,1000
+      DO i=0,100
 C                 all ETA values used by AVERAGE()
 C                            \/    
        CALL CONTRACT_Kg(i*1.0D0/1000, XI, a, Kg0)

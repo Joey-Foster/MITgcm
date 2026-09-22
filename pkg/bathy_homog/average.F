@@ -8,9 +8,9 @@ C23456789012345678901234567890123456789012345678901234567890123456789012
       _RL h
       _RL MY_FUNC, value_storage, xi, a
       INTEGER N, i
-      _RL ETA(0:1000)
+      _RL ETA(0:100)
 
-      N = 1000 /* < hardcoded for now ^ */
+      N = 100 /* < hardcoded for now ^ */
       h = 1.0D0 / N
 
       DO i=0,N
