@@ -129,10 +129,10 @@ C     #####################################
 C     Need to test posdefness for Kg0
 C     *before* calling STORE_gbar() so
 C     small bit of code duplication here...
-      DO i=0,100
+      DO i=0,25
 C                 all ETA values used by AVERAGE()
 C                            \/    
-       CALL CONTRACT_Kg(i*1.0D0/1000, XI, a, Kg0)
+       CALL CONTRACT_Kg(i*1.0D0/25, XI, a, Kg0)
 
        CALL CHECK_POSDEF(Kg0, IS_POSDEF)
        IF ( .NOT.IS_POSDEF ) THEN
@@ -166,7 +166,6 @@ C      disable homog
             IF ( includeAdvec_Homog ) THEN
 C           rescale dimensionFULL diffusion back
 C           to undo coordinate transform shenanigans
-C           **TODO: Come back to this to check if this is actually the right rescaling**
             RESULT(1,1) = RESULT(1,1) * a
             RESULT(2,2) = RESULT(2,2) * 1/a
             ENDIF
