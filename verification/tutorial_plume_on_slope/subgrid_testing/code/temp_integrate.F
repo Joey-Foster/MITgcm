@@ -154,6 +154,7 @@ C     Diffusion local vars
       _RL kappaRk_copy(1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr)
       _RL a
 
+C     diagnostic vars
       _RL maxK11_diff, maxK22_diff
       INTEGER maxK11_diff_idx(3), maxK22_diff_idx(3)
       LOGICAL K11_diff_updated, K22_diff_updated
@@ -274,7 +275,7 @@ CADJ STORE kappaRk = comlev1_bibj, key = tkey, kind = isbyte
 #endif /* INCLUDE_CALC_DIFFUSIVITY_CALL */
 
 #ifdef ALLOW_BATHY_HOMOG
-      IF ( useBATHY_HOMOG ) THEN
+      IF ( useBATHY_HOMOG .AND..NOT.useGMredi ) THEN
 
       IF ( myIter .EQ. 1 ) THEN
         diffKhT_copy = diffKhT
@@ -422,7 +423,8 @@ C      To ensure the velocities are divergence free, the modifications made
 C      here must be called *before* MOMENTUM_CORRECTION_STEP() and hence
 C      this IF statement is only compatible with StaggerTimeStep=.FALSE.
 C      (c.f. bathy_homog_check.F)
-       IF ( useBATHY_HOMOG .AND. includeAdvec_Homog ) THEN
+       IF ( useBATHY_HOMOG .AND. includeAdvec_Homog 
+     &                     .AND..NOT.useGMredi ) THEN
        
         DO j=1,sNy
          DO i=1,sNx

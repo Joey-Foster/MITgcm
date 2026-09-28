@@ -1,0 +1,15 @@
+# GM-Redi package parameters:
+
+# GM_background_K:      GM  diffusion coefficient
+# GM_taper_scheme:      slope clipping or one of the tapering schemes
+# GM_AdvForm:           FALSE = use 'skew form' instead
+# GM_AdvSeparate:       TRUE = do bolus advection separate from Eulerian
+
+ &GM_PARM01
+  GM_background_K    = 1.0E-5,
+#                      ^ based on typical K_xx, K_yy values 
+#                        when running with gmredi OFF 
+  GM_taper_scheme    = 'dm95',
+  GM_AdvForm         =.TRUE.,
+  GM_AdvSeparate     =.FALSE.,
+ /
