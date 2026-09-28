@@ -297,7 +297,8 @@ CADJ STORE kappaRk = comlev1_bibj, key = tkey, kind = isbyte
      &                    delX(i), delR(k), deltaT,
      &                    uFld(i,j,k), wFld(i,j,k))
             ELSE
-               CALL USE_EXPLICIT_K(diffKhT_copy, 
+               CALL USE_EXPLICIT_K(diffKhT_copy,
+     &                             0.0D0, 0.0D0,
      &                             kappaRk_copy(i,j,k))
             ENDIF
             

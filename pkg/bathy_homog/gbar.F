@@ -111,8 +111,10 @@ C23456789012345678901234567890123456789012345678901234567890123456789012
 
       SUBROUTINE CONTRACT_Kgbar(XI, RESULT, a)
       IMPLICIT NONE
+#include "SIZE.h"
 #include "EEPARAMS.h"
 #include "BATHY_HOMOG.h"
+#include "PARAMS.h"
 
       _RL XI
       _RL RESULT(2, 2)
@@ -126,6 +128,9 @@ C23456789012345678901234567890123456789012345678901234567890123456789012
       COMMON /DIFFUSION_MATRIX/ K
 
 C     #####################################
+      IF (.NOT.useGMRedi) THEN 
+C     don't check for pos def when using gmredi
+
 C     Need to test posdefness for Kg0
 C     *before* calling STORE_gbar() so
 C     small bit of code duplication here...
@@ -142,6 +147,7 @@ C                            \/
        ENDIF
 
       ENDDO
+      ENDIF
 C     ##################################### 
       IF ( K(2,2) .EQ. 0.0D0 ) THEN
 C        very dirty hack to avoid DIV_ZERO
@@ -173,6 +179,6 @@ C           to undo coordinate transform shenanigans
       ENDIF
       
       PRINT*, "bathy homog Kgbar=", 
-     &        RESULT(1,1), RESULT(2,1), RESULT(2,2)
+     &        RESULT(1,1), RESULT(1,2), RESULT(2,1), RESULT(2,2)
 
       END

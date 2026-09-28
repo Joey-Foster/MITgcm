@@ -1,32 +1,34 @@
 C23456789012345678901234567890123456789012345678901234567890123456789012
 #include "CPP_OPTIONS.h"
 
-      SUBROUTINE USE_EXPLICIT_K(diffKh, diffKz)
+      SUBROUTINE USE_EXPLICIT_K(K11, K12, K21, K22)
       IMPLICIT NONE
+#include "SIZE.h"
 #include "EEPARAMS.h"
 #include "BATHY_HOMOG.h"
+#include "PARAMS.h"
 
-      _RL diffKh, diffKz
+      _RL K11, K12, K21, K22
       _RL K(2,2)
 
       COMMON /DIFFUSION_MATRIX/ K
 
-      IF ( usePosDefHack ) THEN
+      IF ( usePosDefHack .AND..NOT. useGMRedi ) THEN
 C     destructively force K to be isotropic
 C     and set to the vertical diffusion coefficient
 C     as this is the smaller of the two
-       K(1,1) = diffKz
-       K(1,2) = 0.0
-       K(2,1) = 0.0
-       K(2,2) = diffKz
+       K(1,1) = K22
+       K(1,2) = 0.0D0
+       K(2,1) = 0.0D0
+       K(2,2) = K22
       ELSE
-       K(1,1) = diffKh
-       K(1,2) = 0.0
-       K(2,1) = 0.0
-       K(2,2) = diffKz
+       K(1,1) = K11
+       K(1,2) = K12
+       K(2,1) = K21
+       K(2,2) = K22
       ENDIF
 
-      PRINT*, "bathy homog Kread=", K(1,1), K(2,1), K(2,2)
+      PRINT*, "bathy homog Kread=", K(1,1), K(1,2), K(2,1), K(2,2)
 
       END
 
