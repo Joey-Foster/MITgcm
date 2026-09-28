@@ -1,5 +1,6 @@
 # Packages
  &PACKAGES
  useOBCS=.TRUE.,
- useMNC=.TRUE.,
+ useMNC=.TRUE. 
+ useGMRedi=.TRUE.,
  &
