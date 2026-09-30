@@ -13,7 +13,7 @@ CEOP
 C--   Contants
 C     Useful physical values
       Real*8 PI
-      PARAMETER ( PI    = 3.14159265358979323844D0   )
+      PARAMETER ( PI    = 3.14159265358979323846D0   )
       Real*8 deg2rad
       PARAMETER ( deg2rad = 2.D0*PI/360.D0           )
 
