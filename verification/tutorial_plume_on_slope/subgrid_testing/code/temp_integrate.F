@@ -424,8 +424,7 @@ C      To ensure the velocities are divergence free, the modifications made
 C      here must be called *before* MOMENTUM_CORRECTION_STEP() and hence
 C      this IF statement is only compatible with StaggerTimeStep=.FALSE.
 C      (c.f. bathy_homog_check.F)
-       IF ( useBATHY_HOMOG .AND. includeAdvec_Homog 
-     &                     .AND..NOT.useGMredi ) THEN
+       IF ( useBATHY_HOMOG .AND. includeAdvec_Homog ) THEN
        
         DO j=1,sNy
          DO i=1,sNx

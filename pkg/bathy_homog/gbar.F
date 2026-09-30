@@ -40,6 +40,8 @@ C23456789012345678901234567890123456789012345678901234567890123456789012
       CALL AVERAGE(g012_OVER_Kg22, XI, a, AVG)
       CALL C21(XI, a, C21_val)
 
+      PRINT*, "c21=", C21_val
+
       RESULT = C21_val*AVG
 
       END
@@ -147,18 +149,19 @@ C                            \/
        ENDIF
 
       ENDDO
-      ENDIF
-C     ##################################### 
-      IF ( K(2,2) .EQ. 0.0D0 ) THEN
-C        very dirty hack to avoid DIV_ZERO
-C        error. (In principle, this should 
-C        only trigger if K is identically zero,
-C        which happens sufficiently rarely (?) )       
-         IS_POSDEF = .FALSE. 
+C     #####################################
+      ELSE
+       IS_POSDEF = .TRUE.
+       IF ( K(2,2) .EQ. 0.0D0 ) THEN
+C         very dirty hack to avoid DIV_ZERO
+C         error if CHECK_POSDEF() is diabled       
+          IS_POSDEF = .FALSE. 
+       ENDIF
       ENDIF
 
       IF ( .NOT.IS_POSDEF ) THEN
 C      disable homog
+       PRINT*, "bathy homog disabled"
        RESULT(1,1) = K(1,1)
        RESULT(1,2) = K(1,2)
        RESULT(2,1) = K(2,1)
@@ -166,6 +169,9 @@ C      disable homog
       ELSE
 
             CALL STORE_gbar(XI, a, gbar)
+
+            PRINT*, "gbar=", 
+     &             gbar(1,1), gbar(1,2), gbar(2,1), gbar(2,2)
 
             CALL CONTRACT(K, gbar, RESULT)
 
@@ -178,7 +184,9 @@ C           to undo coordinate transform shenanigans
             
       ENDIF
       
+      IF ( IS_POSDEF ) THEN
       PRINT*, "bathy homog Kgbar=", 
      &        RESULT(1,1), RESULT(1,2), RESULT(2,1), RESULT(2,2)
+      ENDIF
 
       END

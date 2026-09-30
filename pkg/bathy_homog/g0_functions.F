@@ -3,10 +3,11 @@ C23456789012345678901234567890123456789012345678901234567890123456789012
 
       FUNCTION g0_OFFDIAG(ETA, XI, a)
       IMPLICIT NONE
+#include "SIZE.h"
 #include "EEPARAMS.h"
+#include "PARAMS.h"   /* contain PI */
 #include "BATHY_HOMOG.h"
 
-      _RL PI
       _RL ETA, XI
       _RL g0_OFFDIAG
 
@@ -15,7 +16,6 @@ C     three args and idk how to do kwargs in fortran
 C     so this is just defined but unused
       _RL a 
 
-      PI = 3.14159265358979323846D0
       g0_OFFDIAG = gamma * 2.0 * PI * (XI - 1.0) * COS(2.0*PI*ETA)
 
       RETURN 
