@@ -1,9 +1,13 @@
  &BATHY_HOMOG_PARM01
 includeAdvec_Homog=.FALSE.,
 usePosDefHack=.TRUE.,
-#gamma = 0.15
-# gamma is my notation for boundary rescaling.
-# This may be necessary for non-zero off diag 
-# entires in K when I get around to implementing
-# that...
+######################################
+# gamma rescales the coordinate map   
+# in an attempt to fix DIV_ZERO error 
+# in the useGMRedi=.TRUE. case.        
+#------------------------------------ 
+# If useGMRedi=.FALSE., leave gamma   
+# defaulting to 1.0D0                 
+######################################
+gamma = 1E-10,
  /

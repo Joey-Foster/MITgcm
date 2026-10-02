@@ -3,44 +3,18 @@ C23456789012345678901234567890123456789012345678901234567890123456789012
 
       SUBROUTINE AVERAGE(MY_FUNC, xi, a, value_storage)
       IMPLICIT NONE
-#include "SIZE.h"
 #include "EEPARAMS.h"
-#include "PARAMS.h"   /* contains PI */
 
       _RL MY_FUNC, xi, a, value_storage
       EXTERNAL MY_FUNC
-      
-      _RL positive_part,negative_part
-      _RL interval(2)
 
-      _RL K(2,2)
+C     This is now a redudant function as the core logical of AVERAGE()
+C     has been moved to TRAPEZOID and/or SIMPSON.
 
-      COMMON /DIFFUSION_MATRIX/ K
+C     The existence of this subroutine body as well as the entirety
+C     of GENERIC_SIMPSON() is for legacy purposes 
 
-      IF ( K(2,1) .NE. 0.0D0 ) THEN
-
-       interval(1) = 0.0D0
-C      solve K(2,1)*(-pi cos(2pi eta)) + K(2,2) = 0
-       interval(2) = ACOS( K(2,2) / (K(2,1)*PI)) / (2.0*PI)
-
-       PRINT*, "interval(2)=",interval(2)
-
-       CALL GENERIC_SIMPSON(MY_FUNC, xi, a,
-     &                      interval, positive_part)
-
-       interval(1) = interval(2)
-       interval(2) = 1.0D0 - interval(2)
-
-       CALL GENERIC_SIMPSON(MY_FUNC, xi, a,
-     &                      interval, negative_part)
-
-       value_storage = 2*positive_part + negative_part
-
-      ELSE
-
-       CALL FULL_PERIOD_TRAPEZOID(MY_FUNC, xi, a, value_storage)
-
-      ENDIF
+      CALL FULL_PERIOD_TRAPEZOID(MY_FUNC, xi, a, value_storage)
 
       END
 

@@ -71,7 +71,7 @@ C     as this is the smaller of the two
        K(2,2) = implicit_diffKz
       ENDIF
 
-      PRINT*, "bathy homog Korig=", K(1,1), K(2,1), K(2,2)
+      PRINT*, "bathy homog Kimplicit=", K(1,1), K(2,2)
 
       END
 

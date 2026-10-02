@@ -876,7 +876,7 @@ c       ENDDO
                  a = 1.0D0
                 ENDIF
 
-                CALL CONTRACT_Kgbar(0.5D0, Kgbar, a)
+                CALL CONTRACT_Kgbar(gamma/2, Kgbar, a, myThid)
      		
      		Kux(i,j,k,bi,bj) = Kgbar(1,1)
 #ifdef GM_EXTRA_DIAGONAL

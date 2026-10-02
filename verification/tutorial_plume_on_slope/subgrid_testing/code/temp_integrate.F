@@ -308,7 +308,7 @@ CADJ STORE kappaRk = comlev1_bibj, key = tkey, kind = isbyte
               a = 1.0D0
             ENDIF
 
-            CALL CONTRACT_Kgbar(0.5D0, Kgbar, a)
+            CALL CONTRACT_Kgbar(gamma/2, Kgbar, a, myThid)
 
 C           this MAXDIFF stuff should go in bathy_homog_diagnostics eventually...
             CALL FIND_K_MAXDIFF(Kgbar(1,1), Kgbar(2,2),

@@ -111,7 +111,7 @@ C23456789012345678901234567890123456789012345678901234567890123456789012
 
       END
 
-      SUBROUTINE CONTRACT_Kgbar(XI, RESULT, a)
+      SUBROUTINE CONTRACT_Kgbar(XI, RESULT, a, myThid)
       IMPLICIT NONE
 #include "SIZE.h"
 #include "EEPARAMS.h"
@@ -122,12 +122,16 @@ C23456789012345678901234567890123456789012345678901234567890123456789012
       _RL RESULT(2, 2)
       _RL K(2, 2), gbar(2,2)
       _RL a
+      INTEGER myThid
+      
+      LOGICAL cosine_root
 
       LOGICAL IS_POSDEF
       _RL Kg0(2,2)
       INTEGER i 
 
       COMMON /DIFFUSION_MATRIX/ K
+      COMMON /INTEGRABILITY_CHECK/ cosine_root
 
 C     #####################################
       IF (.NOT.useGMRedi) THEN 
@@ -160,14 +164,37 @@ C         error if CHECK_POSDEF() is diabled
       ENDIF
 
       IF ( .NOT.IS_POSDEF ) THEN
-C      disable homog
        PRINT*, "bathy homog disabled"
        RESULT(1,1) = K(1,1)
        RESULT(1,2) = K(1,2)
        RESULT(2,1) = K(2,1)
        RESULT(2,2) = K(2,2)
       ELSE
+C           ##############################################
+C           Since the averaging proceedure is going ahead,
+C           we now need to check for integrability in the 
+C           case of off-diagonal K
 
+            IF ( K(2,1).NE. 0.0D0) THEN
+C           SOLVE: 
+C            K(2,1)*(pi cos(2pi eta)) + K(2,2)*a/gamma != 0
+C
+C      =>   cos(2pi eta) != -K(2,2)/K(2,1) * a/pi * 1/gamma
+C      =>   | K(2,2)/K(2,1) | * a/pi * 1/gamma > 1
+      
+             IF ( ABS(K(2,2)/K(2,1)) * (a/PI) * 1.0D0/gamma 
+     &                                     .LT. 1.0D0 ) THEN
+              cosine_root = .TRUE.
+              PRINT*, "cosine root=",
+     &         ABS(K(2,2)/K(2,1)) * (a/PI) * 1.0D0/gamma 
+              CALL BATHY_HOMOG_CHECK( myThid )
+             ELSE
+              cosine_root = .FALSE.
+             ENDIF
+            ENDIF
+C           #############################################
+
+C           All Checks Pass! DO THE THING!
             CALL STORE_gbar(XI, a, gbar)
 
             PRINT*, "gbar=", 
@@ -178,8 +205,8 @@ C      disable homog
             IF ( includeAdvec_Homog ) THEN
 C           rescale dimensionFULL diffusion back
 C           to undo coordinate transform shenanigans
-            RESULT(1,1) = RESULT(1,1) * a
-            RESULT(2,2) = RESULT(2,2) * 1/a
+            RESULT(1,1) = RESULT(1,1) * a/gamma
+            RESULT(2,2) = RESULT(2,2) * gamma/a
             ENDIF
             
       ENDIF

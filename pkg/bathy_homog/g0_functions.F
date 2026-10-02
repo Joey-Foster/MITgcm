@@ -16,7 +16,7 @@ C     three args and idk how to do kwargs in fortran
 C     so this is just defined but unused
       _RL a 
 
-      g0_OFFDIAG = gamma * 2.0 * PI * (XI - 1.0) * COS(2.0*PI*ETA)
+      g0_OFFDIAG = 2.0 * PI * (XI/gamma - 1.0) * COS(2.0*PI*ETA)
 
       RETURN 
       END
@@ -24,12 +24,13 @@ C     so this is just defined but unused
       FUNCTION g0_11(ETA, XI, a)
       IMPLICIT NONE
 #include "EEPARAMS.h" 
+#include "BATHY_HOMOG.h"
 
       _RL ETA, XI
       _RL g0_OFFDIAG, g0_11
       _RL a
 
-      g0_11 = (g0_OFFDIAG(ETA, XI, a)**2 + 1.0) / a
+      g0_11 = (g0_OFFDIAG(ETA, XI, a)**2 + 1.0) * gamma / a
 
       RETURN
       END
@@ -37,11 +38,12 @@ C     so this is just defined but unused
       FUNCTION g0_22(a)
       IMPLICIT NONE
 #include "EEPARAMS.h" 
+#include "BATHY_HOMOG.h"
 
       _RL a
       _RL g0_22
 
-      g0_22 = a
+      g0_22 = a / gamma
 
       RETURN
       END

@@ -27,6 +27,9 @@ C     !LOCAL VARIABLES:
 C     msgBuf   :: Informational/error message buffer
       CHARACTER*(MAX_LEN_MBUF) msgBuf
 
+      LOGICAL cosine_root
+      COMMON /INTEGRABILITY_CHECK/ cosine_root
+
       _BEGIN_MASTER(myThid)
 
        WRITE(msgBuf,'(2A)') 'BATHY_HOMOG_CHECK:',
@@ -37,9 +40,21 @@ C     msgBuf   :: Informational/error message buffer
 C--  Check parameters:
 
        IF ( staggerTimeStep .AND. includeAdvec_Homog ) THEN
-        WRITE(msgBuf,'(3A)') 'BATHY_HOMOG_CHECK:',
+        WRITE(msgBuf,'(3A)') 'BATHY_HOMOG_CHECK: ',
      &                       'includeAdvec_Homog is ',
      &                       'incompatible with staggerTimeStep'
+        CALL PRINT_ERROR( msgBuf, myThid )
+        CALL ALL_PROC_DIE( 0 )
+        STOP 'ABNORMAL END: S/R BATHY_HOMOG_CHECK'
+       ENDIF
+
+       IF ( cosine_root ) THEN
+        WRITE(msgBuf,'(2A)') '** ERROR ** BATHY_HOMOG_CHECK: ',
+     &                       'Kg^2_2 has a root in [0,1]'
+        CALL PRINT_ERROR( msgBuf, myThid )
+        WRITE(msgBuf,'(2A)') '** ERROR ** BATHY_HOMOG_CHECK: ',
+     &                       'Try decreasing the value of '// 
+     &                       'gamma in data.bathy_homog'
         CALL PRINT_ERROR( msgBuf, myThid )
         CALL ALL_PROC_DIE( 0 )
         STOP 'ABNORMAL END: S/R BATHY_HOMOG_CHECK'
