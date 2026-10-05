@@ -77,16 +77,17 @@ C     store back in (X,Z)
 
       END
 
-      SUBROUTINE velTrans_unitsquare(x_n, x_np1, z_np1,
-     I                               delX, delZ, 
-     I                               recip_hFacC, recip_hFacW,
-     U                               uTrans_i, uTrans_ip1, wTrans_i)
+      SUBROUTINE update_velTrans(x_n, x_np1, z_np1,
+     I                           delX, delZ, 
+     I                           recip_hFacC, recip_hFacW,
+     U                           uTrans_i, uTrans_ip1, wTrans_i)
       IMPLICIT NONE
 C     takes in corners of rotated cell
 C     defines velocities from transports
-C     computes transports on the unit square with respect to rotated coords
+C     computes transports in xi space with respect to rotated coords
 C     modifies transport velocites INPLACE!
 #include "EEPARAMS.h"
+#include "BATHY_HOMOG.h"
 
       _RS x_n, x_np1, z_np1
       _RL delX, delZ
@@ -107,6 +108,10 @@ C     modifies transport velocites INPLACE!
       uTrans_ip1 = -uL * x_np1 / delX + uR * x_n / delX
 
       wTrans_i = uT * ((delZ - z_np1) / delZ)
+
+C     multiple by xi domain (i.e. gamma x 1)
+      uTrans_i = uTrans_i * gamma
+      uTrans_ip1 = uTrans_ip1 * gamma
 
       PRINT*, "new uTrans_i, uTrans_ip1, wTrans_i", 
      &             uTrans_i, uTrans_ip1, wTrans_i

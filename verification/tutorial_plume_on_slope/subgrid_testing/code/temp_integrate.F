@@ -452,7 +452,7 @@ C          rotate (x_np1, z_np1)
      I                     hFacC(i,j,k,bi,bj), hFacW(i,j,k,bi,bj))
      
 C          update in-place (!) uTrans and wTrans   
-           CALL velTrans_unitsquare(
+           CALL update_velTrans(
      I                   x_n, x_np1, z_np1,
      I                   delX(i), delR(k),
      I                   recip_ hFacC(i,j,k,bi,bj), 
