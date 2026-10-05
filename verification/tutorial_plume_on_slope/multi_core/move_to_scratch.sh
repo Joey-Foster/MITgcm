@@ -22,5 +22,6 @@ fi
 
 pwd
 echo "Creating directory scratch/jlf1g19/$directory and moving the contents of run/ there"
-mkdir ~/../../scratch/jlf1g19/"$directory"
-mv run/* $_
+mkdir /scratch/jlf1g19/"$directory"
+cp -aL run/* $_
+rm -rf run/*
