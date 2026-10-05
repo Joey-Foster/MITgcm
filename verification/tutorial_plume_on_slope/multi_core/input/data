@@ -33,6 +33,8 @@
 #globalFiles=.TRUE.,
  plotLevel=0,
 staggerTimeStep=.FALSE.,
+# required by gmredi:
+implicitDiffusion=.TRUE.,
  /
 
 # Elliptic solver parameters

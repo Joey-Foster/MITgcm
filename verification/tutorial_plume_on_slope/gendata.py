@@ -22,10 +22,8 @@ highres_sf = 4
 
 subgrid_lengthscale = 10 # metres
 
-gamma = 1
-
 is_multiscale = True
-is_coarse = True
+is_coarse = False
 
 #%% PARAMS TO NOT CHANGE
 H = 200.0 # nominal depth of model (meters)
@@ -128,7 +126,7 @@ if is_multiscale:
         nx_c = int(nx / highres_sf)
         dx_c = construct_dx(nx_c)
         epsilon_c = subgrid_lengthscale/dx_c
-        epsilon = np.interp(dx, dx_c, epsilon_c) # interpolate corase epsilon into highres grid
+        epsilon = np.interp(dx*highres_sf, dx_c, epsilon_c) # interpolate corase epsilon into highres grid
     
 for i in range(nx):
     for j in range(ny):
@@ -137,7 +135,7 @@ for i in range(nx):
         if not is_multiscale:
             d[i, j] = hdiff / 2 * (np.tanh((Lx - x[i] - offset) / xwidth) + 1) - H
         else:
-            pert[i,j] = epsilon[i] * gamma * np.sin(2*np.pi*x[i] / epsilon[i])
+            pert[i,j] = epsilon[i] * np.sin(2*np.pi*x[i] / epsilon[i])
             d[i, j] = hdiff / 2 * (np.tanh((Lx - x[i] - offset) / xwidth) + 1) - H + pert[i,j]
 
 d[0, :] = 0.0
@@ -156,8 +154,8 @@ write_binary('topog.slope', d)
 
 with open('is_multiscale.txt', 'w') as file:
     file.write('# Reminder file saved with input data generation script\n')
-    file.write(f'{is_multiscale=}\n')
-    if is_multiscale:
+    file.write(f'{is_multiscale = }\n')
+    if is_multiscale: 
         file.write(f"epsilon range: {np.min(epsilon):.6f} to {np.max(epsilon):.6f}")
     
 print(f"dx range: {np.min(dx):.6f} to {np.max(dx):.6f} m")
