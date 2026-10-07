@@ -1,3 +1,4 @@
 # Reminder file saved with input data generation script
 is_multiscale = True
-epsilon range: 0.304616 to 0.684314
+delta = 10m
+epsilon range: 11.999852 to 4.048545
