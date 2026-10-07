@@ -22,6 +22,34 @@ def basic_plot(ds, time_idx):
     plt.xlabel('X [m]')
     plt.ylabel('Depth [m]')
     plt.show()
+    
+def CheckEndTimes(datasets):
+    times = {}
+    for i, ds in enumerate(datasets):
+        times[i] = ds['T'].values
+    if len(set( [t[-1] for t in times.values()] )) != 1:
+        for t in times.values():
+            print(t[-1])
+        raise Exception('End time conflict')
+    else:
+        return times
+        
+def comparison_plot(times, values, ylabel, title, save):
+    # times and values are dictionaries of size (3, len(ds['T'].values))
+    # ylabel, title, and save are strings
+    # (cba to do proper type hinting)
+    labels = ['truth', 'off', 'on']
+    plt.figure()
+    for i, time in times.items():
+        val = values[i]
+        plt.plot(time, val, label=f'{labels[i]}')
+    plt.xlabel('Time [s]')
+    plt.legend()
+    plt.ylabel(ylabel)
+    plt.title(title)
+    plt.savefig(f'{save}.pdf', bbox_inches='tight')
+    
+###############################################################################
 
 def compute_temperature_flux(ds, X_pos, time_idx):
     u = ds['U'].isel(T=time_idx).sel(Xp1=X_pos, method='nearest')
@@ -31,19 +59,18 @@ def compute_temperature_flux(ds, X_pos, time_idx):
     differential_theta_flux = u * theta * dz
     return differential_theta_flux.sum(dim='Z').values[0]
 
-def plot_tempertature_flux(ds, X_pos):
-    time = ds['T'].values
-    fluxes = [compute_temperature_flux(ds, X_pos, i) for i in range(len(time))]
-    plt.figure()
-    plt.plot(time, fluxes)
-    plt.xlabel('Time [s]')
-    plt.ylabel(r'Temperature flux [degC m$^2$ s$^{-1}$]')
-    plt.title(f'Temperature flux through X={X_pos}')
-    plt.savefig(f'Temperature_flux_x={X_pos}.pdf', bbox_inches='tight')
+def plot_tempertature_flux(datasets, times, X_pos):
+    fluxes = {i: [compute_temperature_flux(ds, X_pos, j) 
+                  for j in range(len(times[i]))
+              ] for i, ds in enumerate(datasets)}
+    comparison_plot(times, fluxes, 
+                    r'Temperature flux [degC m$^2$ s$^{-1}$]', 
+                    f'Temperature flux through X = {X_pos}', 
+                    f'Temperature_flux_comparison_x={X_pos}')
 
 
 def closest_index(arr, x):
-    "ChatGPT-generated"
+    "ChatGPT-generated" 
     idx = np.searchsorted(arr, x)
 
     if idx == 0:
@@ -66,17 +93,16 @@ def eastward_heat_content(ds, X_pos, time_idx):
 
     return total_eastward_heat
 
-def plot_heat_content(ds, X_pos):
-    time = ds['T'].values[::10] # don't need as high a temporal resoltuion
-    heat = [eastward_heat_content(ds, X_pos, i) for i in tqdm(range(len(time)), 
-                                                              desc='Computing heat content')]
-    plt.figure()
-    plt.plot(time, heat)
-    plt.xlabel('Time [s]')
-    plt.ylabel(r'Heat content [J s$^{-1}$]')
-    plt.title(f'Heat content east of X={X_pos}')
-    plt.savefig('eastward_heat_content.pdf', bbox_inches='tight')
-    
+def plot_heat_content(datasets, times, X_pos):
+    heat = {i: [eastward_heat_content(ds, X_pos, j)
+                for j in tqdm(range(len(times[i][::10])), # ::10 as don't need high temporal resolution
+                              desc=f'Computing heat content for dataset {i+1}/{len(datasets)}') 
+            ] for i, ds in enumerate(datasets)}
+    comparison_plot(times, heat, 
+                    r'Heat content [J s$^{-1}$]', 
+                    f'Heat content east of X = {X_pos}', 
+                    f'eastward_heat_comparison_x={X_pos}')    
+
 def temperature_flux_divergence(ds, time_idx, X_range=(None, None), Z_range=(None, None)):
     
     theta = ds['Temp'].isel(T=time_idx)
@@ -107,23 +133,29 @@ def plot_flux_divergence(ds, time_idx, X_range=(None, None), Z_range=(None, None
     if savefig:
         plt.savefig(f"flux_divergence_t={ds['T'].values[time_idx]}.pdf", bbox_inches='tight')
 
-def temperature_flux_moving_tavg(ds, X_pos, window=3):
-    time = ds['T'].values
-    fluxes = [compute_temperature_flux(ds, X_pos, i) for i in range(len(time))]
-    averaged = np.lib.stride_tricks.sliding_window_view(fluxes, window).mean(axis=1)
-    if window % 2 == 0:
-        time_windowed = time[window//2-1:-window//2] # convention to lose 1 extra point 
-                                                     # on the left for the even window
-    else:
-        time_windowed = time[window//2:-(window//2)]
+def temperature_flux_moving_tavg(datasets, times, X_pos, window=3):
+    labels=['truth', 'off', 'on']
     fig, ax = plt.subplots()
-    plt.plot(time_windowed, averaged)
-    plt.xlabel('Time [s]')
-    plt.ylabel(r'Temperature flux [degC m$^2$ s$^{-1}$]')
-    plt.title(f'Time-averaged temperature flux through X={X_pos}')
-    fig.text(0.15, 0.815, f'window = {window * int(time[1] - time[0])}s', 
-             bbox=dict(boxstyle="round,pad=0.3", fc="white", alpha=0.9))
-    plt.savefig(f'time-averaged-temperature_flux_x={X_pos}.pdf', bbox_inches='tight')
+
+    for i, ds in enumerate(datasets):
+        fluxes = [compute_temperature_flux(ds, X_pos, j) for j in range(len(times[i]))]
+        averaged = np.lib.stride_tricks.sliding_window_view(fluxes, window).mean(axis=1)
+        if window % 2 == 0:
+            time_windowed = times[i][window//2-1:-window//2] # convention to lose 1 extra point 
+                                                         # on the left for the even window
+        else:
+            time_windowed = times[i][window//2:-(window//2)]
+        
+        plt.plot(time_windowed, averaged, label=labels[i])
+        plt.xlabel('Time [s]')
+        plt.ylabel(r'Temperature flux [degC m$^2$ s$^{-1}$]')
+        plt.title(f'Time-averaged temperature flux through X = {X_pos}')
+        # fig.text(0.15, 0.815, f'window = {window * int(times[i][1] - times[i][0])}s', 
+        #          bbox=dict(boxstyle="round,pad=0.3", fc="white", alpha=0.9))
+        fig.text(0.15, 0.815, f'window = {window}*{{dt for each dataset}}', 
+                bbox=dict(boxstyle="round,pad=0.3", fc="white", alpha=0.9))#
+    plt.legend(loc='lower right')
+    plt.savefig(f'time-averaged-temperature_flux_comparison_x={X_pos}.pdf', bbox_inches='tight')
     
 def coarsen_data(ds, linear_sf):
     array = ds.values
@@ -181,39 +213,48 @@ def temperature_histogram(ds, time_idx):
 if __name__ == "__main__":
     
     parser = argparse.ArgumentParser()
-    parser.add_argument('-d', help="Path to .nc file", required=True, metavar='path/to/file')
-    parser.add_argument('-d2', help="Saves flux divergence difference at final time "
-                        "by providing path to higher resolution .nc file", metavar='path/to/file')
+    parser.add_argument('--truth', help="Path to highres multiscale bathymetry state_global.nc file", 
+                        required=True, metavar='path/to/file')
+    parser.add_argument('--off', help="Path to coarse smooth bathymetry state_global.nc file "
+                        "and without my custom package", metavar='path/to/file')
+    parser.add_argument('--on', help="Path to coarse smooth bathymetry state_global.nc file "
+                        "with my custom package", metavar='path/to/file')
+    
     parser.add_argument('-f', '--flux', help='Save temperature flux figure', action='store_true')
     parser.add_argument('-hc', '--heat', help='Save heat content figure', action='store_true')
     parser.add_argument('--hist', help='Save temperature histogram at final time', action='store_true')
-    parser.add_argument('--div', help='Save flux divergence at final time', action='store_true')
-    parser.add_argument("--div-loc", help="Save localised flux divergence at final time "
+    parser.add_argument('-d', '--div', help='Save flux divergence at final time', action='store_true')
+    parser.add_argument('-dl', "--div-loc", help="Save localised flux divergence at final time "
                         "by providing 4 floats", nargs=4, type=float, 
                         metavar=("X_start", "X_end", "Z_start", "Z_end"))
-    parser.add_argument('-t', '--tavg', help='Save time-averaged tempertaure flux '
+    parser.add_argument('-taf', '--tavg-flux', help='Save time-averaged tempertaure flux '
                         'by providing the number of timesteps for the averaging window',
                         type=int, metavar='Window size')
     args=parser.parse_args()
 
-    ds = xr.open_dataset(args.d, chunks={})
+    ds_truth = xr.open_dataset(args.truth, chunks={})
+    ds_off = xr.open_dataset(args.off, chunks={})
+    ds_on = xr.open_dataset(args.on, chunks={})
+    
+    datasets = [ds_truth, ds_off, ds_on]
+    times = CheckEndTimes(datasets)
     
     if args.flux:
-        plot_tempertature_flux(ds, 1000)
-    if args.heat:
-        plot_heat_content(ds, 1000)
-    if args.div:
-        plot_flux_divergence(ds, -1, savefig=True)
-    if args.div_loc is not None:
-        ranges = tuple(args.div_loc)
-        plot_flux_divergence(ds, -1, X_range=ranges[:2], Z_range=ranges[2:], savefig=True)
-    if args.tavg:
-        temperature_flux_moving_tavg(ds, 1000, window=args.tavg)
-    if args.d2:
-        ds2 = xr.open_dataset(args.d2, chunks={})
-        plot_flux_div_diff(ds, ds2, -1)
-    if args.hist:
-        temperature_histogram(ds, -1)
+        plot_tempertature_flux(datasets, times, 1000)
+    # if args.heat:
+    #     plot_heat_content(datasets, times, 1000)
+    # if args.div:
+    #     plot_flux_divergence(ds, -1, savefig=True)
+    # if args.div_loc is not None:
+    #     ranges = tuple(args.div_loc)
+    #     plot_flux_divergence(ds, -1, X_range=ranges[:2], Z_range=ranges[2:], savefig=True)
+    if args.tavg_flux:
+        temperature_flux_moving_tavg(datasets, times, 1000, window=args.tavg_flux)
+    # if args.d2:
+    #     ds2 = xr.open_dataset(args.d2, chunks={})
+    #     plot_flux_div_diff(ds, ds2, -1)
+    # if args.hist:
+    #     temperature_histogram(ds, -1)
         
 
     # for i in range(len(ds['T'].values)):
