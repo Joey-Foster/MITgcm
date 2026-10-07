@@ -18,9 +18,20 @@ nx = 320
 ny = 1
 nz = 60
 
-highres_sf = 4
+highres_sf = 16
 
-subgrid_lengthscale = 10 # metres
+delta = 10 # (meters)
+
+#############################################
+#      dimensionLESS parameterisation:      #
+#             ε sin( 2pi x'/ε )             #
+#    is equivalent to the dimensionFULL     #
+#        δ/Δ sin[2pi (x/Δ) / (δ/Δ)]         #
+#                                           #
+#  therefore, in this file which constructs # 
+#  the dimensionFULL bathymetry, the code   #
+#  variable 'delta' plays the role of ε     #
+#############################################
 
 is_multiscale = True
 is_coarse = False
@@ -120,14 +131,6 @@ d = np.zeros((nx, ny), dtype=np.float64)
 if is_multiscale:
     pert = np.zeros((nx, ny), dtype=np.float64)
     
-    if is_coarse:
-        epsilon = subgrid_lengthscale/dx
-    else:
-        nx_c = int(nx / highres_sf)
-        dx_c = construct_dx(nx_c)
-        epsilon_c = subgrid_lengthscale/dx_c
-        epsilon = np.interp(dx*highres_sf, dx_c, epsilon_c) # interpolate corase epsilon into highres grid
-    
 for i in range(nx):
     for j in range(ny):
         # d[i, j] = hdiff/2 * (np.exp((x[i]-offset)/xwidth) - np.exp(-(x[i]-offset)/xwidth)) / (np.exp((x[i]-offset)/xwidth) + np.exp(-(x[i]-offset)/xwidth)) + hdiff/2 - H # alternative
@@ -135,7 +138,7 @@ for i in range(nx):
         if not is_multiscale:
             d[i, j] = hdiff / 2 * (np.tanh((Lx - x[i] - offset) / xwidth) + 1) - H
         else:
-            pert[i,j] = epsilon[i] * np.sin(2*np.pi*x[i] / epsilon[i])
+            pert[i,j] = delta * np.sin(2*np.pi*x[i] / delta)
             d[i, j] = hdiff / 2 * (np.tanh((Lx - x[i] - offset) / xwidth) + 1) - H + pert[i,j]
 
 d[0, :] = 0.0
@@ -156,11 +159,12 @@ with open('is_multiscale.txt', 'w') as file:
     file.write('# Reminder file saved with input data generation script\n')
     file.write(f'{is_multiscale = }\n')
     if is_multiscale: 
-        file.write(f"epsilon range: {np.min(epsilon):.6f} to {np.max(epsilon):.6f}")
+        file.write(f'{delta = }m\n')
+        file.write(f"epsilon range: {np.max(delta/dx):.6f} to {np.min(delta/dx):.6f}\n")
     
 print(f"dx range: {np.min(dx):.6f} to {np.max(dx):.6f} m")
-if is_multiscale:
-    print(f"epsilon range: {np.min(epsilon):.6f} to {np.max(epsilon):.6f}")
 print(f"Temperature range: {np.min(T):.6f} to {np.max(T):.6f} degC")
 print(f"Bathymetry range: {np.min(d):.6f} to {np.max(d):.6f} m")
-print(f"Q forcing range: {np.min(Q):.6f} to {np.max(Q):.6f}")
+print(f"Q forcing range: {np.min(Q):.6f} to {np.max(Q):.6f}\n")
+if is_multiscale:
+    print(f"epsilon range: {np.max(delta/dx):.6f} to {np.min(delta/dx):.6f}")
