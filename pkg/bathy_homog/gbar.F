@@ -202,7 +202,7 @@ C           All Checks Pass! DO THE THING!
 
             CALL CONTRACT(K, gbar, RESULT)
 
-            IF ( includeAdvec_Homog ) THEN
+            IF ( a.NE.1.0D0 .OR. gamma.NE.1.0D0 ) THEN
 C           rescale dimensionFULL diffusion back
 C           to undo coordinate transform shenanigans
             RESULT(1,1) = RESULT(1,1) * a/gamma
