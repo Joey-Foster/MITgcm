@@ -11,6 +11,7 @@ parser.add_argument('--off', help='file path to state_global.nc with smooth coar
                     'bathymetry and WITHOUT my custom package', required=True)
 parser.add_argument('--on', help='file path to state_global.nc with smooth coarse '
                     'bathymetry and WITH my custom package', required=True)
+parser.add_argument('--png',help='save figure as png instead of pdf',action='store_true')
 args=parser.parse_args()
 
 datasets = {}
@@ -56,4 +57,7 @@ cbar = fig.colorbar(im, ax=ax, orientation="horizontal")
 cbar.set_label(r'$\theta$ [degC]')
 plt.suptitle(rf'Potential tempertaure at $t={{ {int(time[-1])} }}$s')
 
-plt.savefig('homogenisation_comparison.pdf', bbox_inches='tight')
+if args.png:
+    plt.savefig('homogenisation_comparison.png', bbox_inches='tight')   
+else:
+    plt.savefig('homogenisation_comparison.pdf', bbox_inches='tight')
