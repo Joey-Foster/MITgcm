@@ -10,8 +10,9 @@ import matplotlib.pyplot as plt
 prec = np.dtype('>f8')  # big-endian 64-bit float (equivalent to MATLAB 'real*8' with 'b')
 
 def write_binary(path, array):
-    with open(path, 'wb') as fid:
-        np.asarray(array, dtype=prec).ravel(order='F').tofile(fid)
+    if write_output:
+        with open(path, 'wb') as fid:
+            np.asarray(array, dtype=prec).ravel(order='F').tofile(fid)
 
 #%% PARAMS TO CHANGE:
 nx = 320
@@ -35,6 +36,7 @@ delta = 10 # (meters)
 
 is_multiscale = True
 is_coarse = False
+write_output=True
 
 #%% PARAMS TO NOT CHANGE
 H = 200.0 # nominal depth of model (meters)
@@ -63,7 +65,7 @@ def construct_dx(nx):
 dx = construct_dx(nx)
 dy = Lx / nx
 dz = H / nz
-print(f'delZ = {nz}*{dz:7.6g} <- Copy into input/data.&PARM04\n')
+print(f'delZ = {nz}*{dz:7.9g} <- Copy into input/data &PARM04\n')
 
 # Calculate x coordinates
 x = np.cumsum(dx, dtype=np.float64)
