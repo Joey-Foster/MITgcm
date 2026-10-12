@@ -877,13 +877,17 @@ c       ENDDO
                 ENDIF
 
                 CALL CONTRACT_Kgbar(gamma/2, Kgbar, a, myThid)
-     		
-     		Kux(i,j,k,bi,bj) = Kgbar(1,1)
+ 
+C               update horizontal and vertical diffusion
+C               wrt to ORIGINAL coordinates 
+C               (a b) -> (d -c)
+C               (c d) -> (-b a)
+     		Kux(i,j,k,bi,bj) = Kgbar(2,2)
 #ifdef GM_EXTRA_DIAGONAL
-     		Kuz(i,j,k,bi,bj) = Kgbar(1,2)
+     		Kuz(i,j,k,bi,bj) = -Kgbar(2,1)
 #endif
-     		Kwx(i,j,k,bi,bj) = Kgbar(2,1)
-     		Kwz(i,j,k,bi,bj) = Kgbar(2,2)
+     		Kwx(i,j,k,bi,bj) = -Kgbar(1,2)
+     		Kwz(i,j,k,bi,bj) = Kgbar(1,1)
      	   
            ENDIF
           ENDDO

@@ -327,10 +327,12 @@ C           this MAXDIFF stuff should go in bathy_homog_diagnostics eventually..
                 maxK22_diff_idx(3) = k
             ENDIF
 
-            
-            diffKhT = Kgbar(1,1) /* horizontal diffusion applies to the whole grid...? */
-C           what to assign to Kgbar(1,2), Kgbar(2,1)?  
-            kappaRk(i,j,k) = Kgbar(2,2)
+C           update horizontal and vertical diffusion
+C           wrt to ORIGINAL coordinates 
+C           (a b) -> (d -c)
+C           (c d) -> (-b a)
+            diffKhT = Kgbar(2,2) /* horizontal diffusion applies to the whole grid...? */
+            kappaRk(i,j,k) = Kgbar(1,1)
           
          ENDIF
         ENDDO

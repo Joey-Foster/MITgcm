@@ -28,6 +28,11 @@ C     as this is the smaller of the two
        K(2,2) = K22
       ENDIF
 
+C     rotate K to align with (x1, x2) coords 
+C     (a b) -> (d -c) 
+C     (c d)    (-b a)
+      K = RESHAPE([K(2,2), -K(1,2), -K(2,1), K(1,1)], [2,2])
+            
       PRINT*, "bathy homog Kread=", K(1,1), K(1,2), K(2,1), K(2,2)
 
       END
@@ -70,6 +75,11 @@ C     as this is the smaller of the two
        K(2,1) = 0.0
        K(2,2) = implicit_diffKz
       ENDIF
+
+C     rotate K to align with (x1, x2) coords 
+C     (a b) -> (d -c) 
+C     (c d)    (-b a)
+      K = RESHAPE([K(2,2), -K(1,2), -K(2,1), K(1,1)], [2,2])
 
       PRINT*, "bathy homog Kimplicit=", K(1,1), K(2,2)
 
