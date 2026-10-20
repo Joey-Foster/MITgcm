@@ -15,11 +15,11 @@ def write_binary(path, array):
             np.asarray(array, dtype=prec).ravel(order='F').tofile(fid)
 
 #%% PARAMS TO CHANGE:
-nx = 320
+nx = 320//2
 ny = 1
-nz = 60
+nz = 60//2
 
-highres_sf = 16
+highres_sf = 25
 
 delta = 10 # (meters)
 
@@ -34,8 +34,8 @@ delta = 10 # (meters)
 #  variable 'delta' plays the role of ε     #
 #############################################
 
-is_multiscale = True
-is_coarse = False
+is_multiscale = False
+is_coarse = True
 write_output=True
 
 #%% PARAMS TO NOT CHANGE
@@ -141,7 +141,7 @@ for i in range(nx):
             d[i, j] = hdiff / 2 * (np.tanh((Lx - x[i] - offset) / xwidth) + 1) - H
         else:
             pert[i,j] = delta * np.sin(2*np.pi*x[i] / delta)
-            d[i, j] = hdiff / 2 * (np.tanh((Lx - x[i] - offset) / xwidth) + 1) - H + pert[i,j]
+            d[i, j] = hdiff / 2 * (np.tanh((Lx - x[i] - offset) / xwidth) + 1) - H + pert[i,j]/10
 
 d[0, :] = 0.0
 
