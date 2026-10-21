@@ -205,7 +205,11 @@ C           All Checks Pass! DO THE THING!
             IF ( a.NE.1.0D0 .OR. gamma.NE.1.0D0 ) THEN
 C           rescale dimensionFULL diffusion back
 C           to undo coordinate transform shenanigans
+C           i.e. K @ (a/gamma 0)
+C                    (0 gamma/a)
             RESULT(1,1) = RESULT(1,1) * a/gamma
+            RESULT(1,2) = RESULT(1,2) * gamma/a
+            RESULT(2,1) = RESULT(2,1) * a/gamma
             RESULT(2,2) = RESULT(2,2) * gamma/a
             ENDIF
             
