@@ -15,9 +15,9 @@ def write_binary(path, array):
             np.asarray(array, dtype=prec).ravel(order='F').tofile(fid)
 
 #%% PARAMS TO CHANGE:
-nx = 320//2
+nx = 320
 ny = 1
-nz = 60//2
+nz = 60
 
 highres_sf = 25
 
@@ -34,11 +34,12 @@ delta = 10 # (meters)
 #  variable 'delta' plays the role of ε     #
 #############################################
 
-is_multiscale = False
-is_coarse = True
-write_output=True
+is_multiscale = True
+is_coarse = False
+write_output = False
 
-#%% PARAMS TO NOT CHANGE
+#%% PARAMS TO NOT CHANGE (unless you really want to)
+
 H = 200.0 # nominal depth of model (meters)
 Lx = 6.40e3 # size of domain
 
@@ -129,6 +130,15 @@ dmax = -40.0
 hdiff = dmax + H
 xwidth = hdiff / (2.0 * slope)
 
+def orig_bathy(i,j):
+    return hdiff / 2 * (np.tanh((Lx - x[i] - offset) / xwidth) + 1) - H
+
+def flat(i,j):
+    return -H/2
+
+def triangle(i,j):
+    return (-H/3000 * x[i]) if x[i] <= 3000 else -H
+
 d = np.zeros((nx, ny), dtype=np.float64)
 if is_multiscale:
     pert = np.zeros((nx, ny), dtype=np.float64)
@@ -138,10 +148,10 @@ for i in range(nx):
         # d[i, j] = hdiff/2 * (np.exp((x[i]-offset)/xwidth) - np.exp(-(x[i]-offset)/xwidth)) / (np.exp((x[i]-offset)/xwidth) + np.exp(-(x[i]-offset)/xwidth)) + hdiff/2 - H # alternative
         
         if not is_multiscale:
-            d[i, j] = hdiff / 2 * (np.tanh((Lx - x[i] - offset) / xwidth) + 1) - H
+            d[i, j] = flat(i, j)
         else:
             pert[i,j] = delta * np.sin(2*np.pi*x[i] / delta)
-            d[i, j] = hdiff / 2 * (np.tanh((Lx - x[i] - offset) / xwidth) + 1) - H + pert[i,j]/10
+            d[i, j] = flat(i, j) + pert[i,j]/10
 
 d[0, :] = 0.0
 
