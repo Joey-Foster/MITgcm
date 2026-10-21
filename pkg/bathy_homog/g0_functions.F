@@ -16,7 +16,7 @@ C     three args and idk how to do kwargs in fortran
 C     so this is just defined but unused
       _RL a 
 
-      g0_OFFDIAG = 2.0 * PI * (XI/gamma - 1.0) * COS(2.0*PI*ETA)
+      g0_OFFDIAG = 2.0 * PI * (XI/gamma - 1.0) * COS(2.0*PI*ETA)/10
 
       RETURN 
       END
