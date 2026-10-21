@@ -17,11 +17,11 @@ args=parser.parse_args()
 datasets = {}
 thetas = {}
 for flag, path in vars(args).items():
-    if path is not None:
+    if type(path) is str:
         datasets[flag] = xr.open_dataset(path, chunks={})
         thetas[flag] = datasets[flag]['Temp'].sel(X=slice(0,3000))
 
-if len(set([datasets[flag]['T'].values[-1] for flag, path in vars(args).items() if path is not None])) != 1:
+if len(set([datasets[flag]['T'].values[-1] for flag, path in vars(args).items() if type(path) is str])) != 1:
     print('Warning: Datasets do not share a common end time.\n'
           'Defaulting to "highres" dataset time axis.')
 time = datasets['truth']['T'].values
@@ -58,6 +58,6 @@ cbar.set_label(r'$\theta$ [degC]')
 plt.suptitle(rf'Potential tempertaure at $t={{ {int(time[-1])} }}$s')
 
 if args.png:
-    plt.savefig('homogenisation_comparison.png', bbox_inches='tight')   
+    plt.savefig('homogenisation_comparison.png', bbox_inches='tight', dpi=300)   
 else:
     plt.savefig('homogenisation_comparison.pdf', bbox_inches='tight')
