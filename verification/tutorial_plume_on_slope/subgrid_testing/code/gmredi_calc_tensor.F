@@ -134,10 +134,16 @@ C     kkey :: tape key (depends on levels and tiles)
 #endif
 
 #ifdef ALLOW_BATHY_HOMOG
-# include "BATHY_HOMOG.h"
-# include "SET_GRID.h"
+#include "BATHY_HOMOG.h"
+#include "SET_GRID.h"
       _RL Kgbar(2,2)
       _RL a
+      
+C     diagnostic vars
+      _RL maxKdiff(2,2)
+      INTEGER maxKdiff_idx(2,2,3)
+      LOGICAL Kdiff_updated(2,2)
+      INTEGER i_extra, j_extra
 #endif
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
@@ -705,6 +711,17 @@ C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 C-- 2nd  k loop : compute Tensor Coeff. at U point
 
+#ifdef ALLOW_BATHY_HOMOG
+      IF ( useBATHY_HOMOG ) THEN
+C     initialise maxKdiff before k loop starts
+       DO i_extra=1,2
+        DO j_extra=1,2
+         maxKdiff(i_extra, j_extra) = 0.0D0
+        ENDDO
+       ENDDO
+      ENDIF
+#endif
+
 # ifdef ALLOW_KPP
       IF ( useKPP ) THEN
        DO j=1-OLy,sNy+OLy
@@ -855,7 +872,9 @@ c       ENDDO
 # endif /* GM_EXTRA_DIAGONAL */
 
 #ifdef ALLOW_BATHY_HOMOG
-       IF (useBATHY_HOMOG) THEN
+C placed here (end of 2nd of three k loops) as V-points loop not needed
+      IF (useBATHY_HOMOG) THEN
+      
          DO j=1,sNy
           DO i=1,sNx
            IF (0.0 .LT. hFacC(i,j,k,bi,bj) .AND.
@@ -877,6 +896,19 @@ c       ENDDO
                 ENDIF
 
                 CALL CONTRACT_Kgbar(gamma/2, Kgbar, a, myThid)
+                
+C               this MAXDIFF stuff should go in bathy_homog_diagnostics eventually...
+                CALL FIND_K_MAXDIFF(Kgbar, maxKdiff, Kdiff_updated)
+
+                DO i_extra=1,2
+                 DO j_extra=1,2
+                  IF (Kdiff_updated(i_extra,j_extra)) THEN
+                   maxKdiff_idx(i_extra,j_extra,1) = i
+                   maxKdiff_idx(i_extra,j_extra,2) = j
+                   maxKdiff_idx(i_extra,j_extra,3) = k
+                  ENDIF
+                 ENDDO
+                ENDDO
  
 C               update horizontal and vertical diffusion
 C               wrt to ORIGINAL coordinates 
@@ -892,7 +924,7 @@ C               (c d) -> (-b a)
            ENDIF
           ENDDO
          ENDDO
-       ENDIF
+      ENDIF
 #endif
 
 # ifdef ALLOW_DIAGNOSTICS
@@ -938,6 +970,22 @@ C-        Vertical gradients interpolated to U points
 
 C-- end 2nd  loop on vertical level index k
       ENDDO
+     
+#ifdef ALLOW_BATHY_HOMOG
+      IF ( useBATHY_HOMOG ) THEN
+C     print diagnostic stuff after k loop
+      PRINT*, "bathy homog maxKdiff:"
+      DO i_extra=1,2
+       DO j_extra=1,2
+        WRITE(*,100) i_extra,j_extra, maxKdiff(i_extra, j_extra), 
+     &      maxKdiff_idx(i_extra, j_extra, 1),
+     &      maxKdiff_idx(i_extra, j_extra, 2),
+     &      maxKdiff_idx(i_extra, j_extra, 3)
+ 100    FORMAT('K',I1,I1,':',E23.16," @",I4,I4,I4)
+       ENDDO
+      ENDDO
+      ENDIF
+#endif
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 C-- 3rd  k loop : compute Tensor Coeff. at V point

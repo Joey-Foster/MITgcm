@@ -155,9 +155,10 @@ C     Diffusion local vars
       _RL a
 
 C     diagnostic vars
-      _RL maxK11_diff, maxK22_diff
-      INTEGER maxK11_diff_idx(3), maxK22_diff_idx(3)
-      LOGICAL K11_diff_updated, K22_diff_updated
+      _RL maxKdiff(2,2)
+      INTEGER maxKdiff_idx(2,2,3)
+      LOGICAL Kdiff_updated(2,2)
+      INTEGER i_extra, j_extra
       
 C     Advection local vars
       _RS x_n, x_np1, z_np1, z_np1_copy
@@ -234,7 +235,6 @@ C-    Tracer tendency needs to be set to zero (moved here from gad_calc_rhs):
        DO j=1-OLy,sNy+OLy
         DO i=1-OLx,sNx+OLx
          kappaRk(i,j,k) = 0. _d 0
-         kappaRk_copy(i,j,k) = 0. _d 0
         ENDDO
        ENDDO
       ENDDO
@@ -256,18 +256,6 @@ CADJ STORE gtNm1(:,:,:,bi,bj)  = comlev1_bibj, key=tkey, kind=isbyte
      I         GAD_TEMPERATURE, useGMredi, useKPP,
      O         kappaRk,
      I         myThid )
-     
-#ifdef ALLOW_BATHY_HOMOG
-C     call to subroutine AGAIN instead of copying kappaRk
-C     directly as kappaRk will be modified on each timestep
-C     so this preserves the original calculation
-      IF ( useBATHY_HOMOG ) THEN
-      CALL CALC_3D_DIFFUSIVITY(
-     I         bi, bj, iMin, iMax, jMin, jMax,
-     I         GAD_TEMPERATURE, useGMredi, useKPP,
-     O         kappaRk_copy,
-     I         myThid )  
-      ENDIF
 #endif
 # ifdef ALLOW_AUTODIFF_TAMC
 CADJ STORE kappaRk = comlev1_bibj, key = tkey, kind = isbyte
@@ -281,8 +269,11 @@ CADJ STORE kappaRk = comlev1_bibj, key = tkey, kind = isbyte
         diffKhT_copy = diffKhT
       ENDIF
 
-      maxK11_diff = 0.0D0
-      maxK22_diff = 0.0D0
+      DO i_extra=1,2
+       DO j_extra=1,2
+        maxKdiff(i_extra, j_extra) = 0.0D0
+       ENDDO
+      ENDDO
       
       DO k=1,Nr
        DO j=1,sNy
@@ -291,7 +282,7 @@ CADJ STORE kappaRk = comlev1_bibj, key = tkey, kind = isbyte
      &          hFacC(i,j,k,bi,bj) .LT. 1.0) THEN
          
             IF (diffKhT_copy .EQ. 0.0 .AND. 
-     &         kappaRk_copy(i,j,k) .EQ. 0.0) THEN
+     &          kappaRk(i,j,k) .EQ. 0.0) THEN
      
                CALL USE_IMPLICIT_K(
      &                    delX(i), delR(k), deltaT,
@@ -299,7 +290,7 @@ CADJ STORE kappaRk = comlev1_bibj, key = tkey, kind = isbyte
             ELSE
                CALL USE_EXPLICIT_K(diffKhT_copy,
      &                             0.0D0, 0.0D0,
-     &                             kappaRk_copy(i,j,k))
+     &                             kappaRk(i,j,k))
             ENDIF
             
             IF ( includeAdvec_Homog ) THEN
@@ -311,21 +302,17 @@ CADJ STORE kappaRk = comlev1_bibj, key = tkey, kind = isbyte
             CALL CONTRACT_Kgbar(gamma/2, Kgbar, a, myThid)
 
 C           this MAXDIFF stuff should go in bathy_homog_diagnostics eventually...
-            CALL FIND_K_MAXDIFF(Kgbar(1,1), Kgbar(2,2),
-     &                          maxK11_diff, maxK22_diff,
-     &                          K11_diff_updated, K22_diff_updated)
+            CALL FIND_K_MAXDIFF(Kgbar, maxKdiff, Kdiff_updated)
 
-            IF (K11_diff_updated) THEN
-                maxK11_diff_idx(1) = i
-                maxK11_diff_idx(2) = j
-                maxK11_diff_idx(3) = k
-            ENDIF
-
-            IF (K22_diff_updated) THEN
-                maxK22_diff_idx(1) = i
-                maxK22_diff_idx(2) = j
-                maxK22_diff_idx(3) = k
-            ENDIF
+            DO i_extra=1,2
+             DO j_extra=1,2
+              IF (Kdiff_updated(i_extra,j_extra)) THEN
+               maxKdiff_idx(i_extra,j_extra,1) = i
+               maxKdiff_idx(i_extra,j_extra,2) = j
+               maxKdiff_idx(i_extra,j_extra,3) = k
+              ENDIF
+             ENDDO
+            ENDDO
 
 C           update horizontal and vertical diffusion
 C           wrt to ORIGINAL coordinates 
@@ -339,13 +326,18 @@ C           (c d) -> (-b a)
        ENDDO
       ENDDO
 
-      PRINT*, "bathy homog maxK11_diff", maxK11_diff, 
-     &      maxK11_diff_idx(1), maxK11_diff_idx(2), maxK11_diff_idx(3)
-      PRINT*, "bathy homog maxK22_diff", maxK22_diff,
-     &      maxK22_diff_idx(1), maxK22_diff_idx(2), maxK22_diff_idx(3)
+      PRINT*, "bathy homog maxKdiff:"
+      DO i_extra=1,2
+       DO j_extra=1,2
+        WRITE(*,100) i_extra,j_extra, maxKdiff(i_extra, j_extra), 
+     &      maxKdiff_idx(i_extra, j_extra, 1),
+     &      maxKdiff_idx(i_extra, j_extra, 2),
+     &      maxKdiff_idx(i_extra, j_extra, 3)
+ 100    FORMAT('K',I1,I1,':',E23.16," @",I4,I4,I4)
+       ENDDO
+      ENDDO
       
       ENDIF
-
 #endif /* ALLOW_BATHY_HOMOG */
 
 #ifndef DISABLE_MULTIDIM_ADVECTION

@@ -122,29 +122,28 @@ C     a > 0 and ad-bc > 0.
       
       END
 
-      SUBROUTINE FIND_K_MAXDIFF(Kgbar11, Kgbar22, 
-     &                          K11_diff, K22_diff, FLAG1, FLAG2)
+      SUBROUTINE FIND_K_MAXDIFF(Kgbar, Kdiff, FLAG)
       IMPLICIT NONE
 #include "EEPARAMS.h"
       
-      _RL Kgbar11, Kgbar22, K11_diff, K22_diff
+      _RL Kgbar(2,2), Kdiff(2,2)
+      LOGICAL FLAG(2,2)
+
       _RL K(2,2)
-      LOGICAL FLAG1, FLAG2
+      INTEGER i,j 
 
       COMMON /DIFFUSION_MATRIX/ K
 
-      IF (ABS(K(1,1) - Kgbar11) .GT. K11_diff) THEN
-       K11_diff = ABS(K(1,1) - Kgbar11)
-       FLAG1 = .TRUE.
-      ELSE
-       FLAG1 = .FALSE.
-      ENDIF
-      IF (ABS(K(2,2) - Kgbar22) .GT. K22_diff) THEN
-       K22_diff = ABS(K(2,2) - Kgbar22)
-       FLAG2 = .TRUE.
-      ELSE
-       FLAG2 = .FALSE.
-      ENDIF
+      DO i=1,2
+       DO j=1,2
+        IF (ABS(K(i,j) - Kgbar(i,j)) .GT. Kdiff(i,j)) THEN
+         Kdiff(i,j) = ABS(K(i,j) - Kgbar(i,j))
+         FLAG(i,j) = .TRUE.
+        ELSE
+         FLAG(i,j) = .FALSE.
+        ENDIF
+       ENDDO
+      ENDDO
 
       END
       
