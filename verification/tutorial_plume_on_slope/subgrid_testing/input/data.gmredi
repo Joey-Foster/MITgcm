@@ -1,9 +1,13 @@
 # GM-Redi package parameters:
 
-# GM_background_K:      GM  diffusion coefficient
+# GM_background_K:      GM diffusion coefficient
 # GM_taper_scheme:      slope clipping or one of the tapering schemes
 # GM_AdvForm:           FALSE = use 'skew form' instead
 # GM_AdvSeparate:       TRUE = do bolus advection separate from Eulerian
+# GM_maxSlope:          maximum slope for tapering/clipping
+# subMesoLfMin:         minimum length scale
+# GM_Scrit:             cutoff slope for dm95 tapering
+# GM_Sd:                range over which dm95 smoothly varies
 
  &GM_PARM01
   GM_background_K    = 1.0E-5,
@@ -12,4 +16,8 @@
   GM_taper_scheme    = 'dm95',
   GM_AdvForm         =.TRUE.,
   GM_AdvSeparate     =.FALSE.,
+  GM_maxSlope        = 1.0,
+  subMeso_LfMin      = 1.0,
+  GM_Scrit           = 1.0,
+  GM_Sd              = 0.25,
  /

@@ -9,5 +9,5 @@ usePosDefHack=.TRUE.,
 # If useGMRedi=.FALSE., leave gamma   
 # defaulting to 1.0D0                 
 ######################################
-gamma = 1E-1,
+gamma = 1E-3,
  /
