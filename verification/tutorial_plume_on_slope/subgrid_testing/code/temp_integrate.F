@@ -256,7 +256,6 @@ CADJ STORE gtNm1(:,:,:,bi,bj)  = comlev1_bibj, key=tkey, kind=isbyte
      I         GAD_TEMPERATURE, useGMredi, useKPP,
      O         kappaRk,
      I         myThid )
-#endif
 # ifdef ALLOW_AUTODIFF_TAMC
 CADJ STORE kappaRk = comlev1_bibj, key = tkey, kind = isbyte
 # endif
