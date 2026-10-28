@@ -151,7 +151,6 @@ C     Diffusion local vars
       _RL Kgbar(2,2)
       _RL diffKhT_copy
       SAVE diffKhT_copy
-      _RL kappaRk_copy(1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr)
       _RL a
 
 C     diagnostic vars
@@ -425,8 +424,12 @@ C      (c.f. bathy_homog_check.F)
        
         DO j=1,sNy
          DO i=1,sNx
-          IF (0.0 .LT. hFacC(i,j,k,bi,bj) .AND.
-     &          hFacC(i,j,k,bi,bj) .LT. 1.0) THEN
+         IF (
+     &         (0.0 .LT. hFacC(i,j,k,bi,bj) .AND.
+     &          hFacC(i,j,k,bi,bj) .LT. 1.0) .OR.
+     &        ( hFacC(i,j,k,bi,bj) .EQ. 0.0 .AND.
+     &         hFacC(i,j,k-1,bi,bj) .EQ. 1.0 ) 
+     &      ) THEN
      
 C          copy coordinates of the current cell 
            x_n = xG(i,j,bi,bj)
