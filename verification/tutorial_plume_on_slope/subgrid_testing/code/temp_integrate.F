@@ -277,8 +277,12 @@ CADJ STORE kappaRk = comlev1_bibj, key = tkey, kind = isbyte
       DO k=1,Nr
        DO j=1,sNy
         DO i=1,sNx
-         IF (0.0 .LT. hFacC(i,j,k,bi,bj) .AND.
-     &          hFacC(i,j,k,bi,bj) .LT. 1.0) THEN
+         IF (
+     &         (0.0 .LT. hFacC(i,j,k,bi,bj) .AND.
+     &          hFacC(i,j,k,bi,bj) .LT. 1.0) .OR.
+     &        ( hFacC(i,j,k,bi,bj) .EQ. 0.0 .AND.
+     &         hFacC(i,j,k-1,bi,bj) .EQ. 1.0 ) 
+     &      ) THEN
          
             IF (diffKhT_copy .EQ. 0.0 .AND. 
      &          kappaRk(i,j,k) .EQ. 0.0) THEN

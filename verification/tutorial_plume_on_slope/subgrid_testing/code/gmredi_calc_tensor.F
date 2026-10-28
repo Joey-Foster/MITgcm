@@ -877,8 +877,12 @@ C placed here (end of 2nd of three k loops) as V-points loop not needed
       
          DO j=1,sNy
           DO i=1,sNx
-           IF (0.0 .LT. hFacC(i,j,k,bi,bj) .AND.
-     &           hFacC(i,j,k,bi,bj) .LT. 1.0) THEN
+           IF (
+     &         (0.0 .LT. hFacC(i,j,k,bi,bj) .AND.
+     &          hFacC(i,j,k,bi,bj) .LT. 1.0) .OR.
+     &        ( hFacC(i,j,k,bi,bj) .EQ. 0.0 .AND.
+     &         hFacC(i,j,k-1,bi,bj) .EQ. 1.0 ) 
+     &     ) THEN
      		
      		CALL USE_EXPLICIT_K(Kux(i,j,k,bi,bj),
 #ifdef GM_EXTRA_DIAGONAL
