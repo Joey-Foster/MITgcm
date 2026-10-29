@@ -1,6 +1,37 @@
 C23456789012345678901234567890123456789012345678901234567890123456789012
 #include "CPP_OPTIONS.h"
 
+      FUNCTION NONDIMENSIONALISE(i, j, k, bi, bj)
+      IMPLICIT NONE
+C     compute 1/LU for Reynolds-like nondimensionalisation
+C     of diffusion matrix elements
+#include "EEPARAMS.h"
+#include "SIZE.h"
+#include "PARAMS.h"
+#include "GRID.h"
+#include "DYNVARS.h"
+#include "SET_GRID.h"
+
+      INTEGER i,j,k,bi,bj
+      _RL NONDIMENSIONALISE
+
+      _RL uC, wC, speed
+      
+      uC = 0.5D0 * (uVel(i,j,k,bi,bj) + uVel(i+1,j,k,bi,bj))
+      wC = 0.5D0 * (wVel(i,j,k,bi,bj) + wVel(i,j,k+1,bi,bj))
+      speed = SQRT(uC**2 + wC**2)
+
+C     N.B. taking delX for L in both x and z for ease of calcualtion
+      IF (speed .NE. 0.0D0) THEN
+       NONDIMENSIONALISE = 1.0D0 / (delX(i) * speed)
+      ELSE 
+C      this should happen rarely (except perhaps the first timestep)
+C      this will kill bathy homgo package as it's equivalent to \nu = \infty
+       NONDIMENSIONALISE = 0.0D0
+      ENDIF
+      RETURN
+      END
+
       SUBROUTINE USE_EXPLICIT_K(K11, K12, K21, K22)
       IMPLICIT NONE
 #include "SIZE.h"

@@ -138,6 +138,7 @@ C     kkey :: tape key (depends on levels and tiles)
 #include "SET_GRID.h"
       _RL Kgbar(2,2)
       _RL a
+      _RL NONDIMENSIONALISE
       
 C     diagnostic vars
       _RL maxKdiff(2,2)
@@ -884,14 +885,15 @@ C placed here (end of 2nd of three k loops) as V-points loop not needed
      &         hFacC(i,j,k-1,bi,bj) .EQ. 1.0 ) 
      &     ) THEN
      		
-     		CALL USE_EXPLICIT_K(Kux(i,j,k,bi,bj),
+     	     CALL USE_EXPLICIT_K(
+     & 	     Kux(i,j,k,bi,bj)*NONDIMENSIONALISE(i,j,k,bi,bj),
 #ifdef GM_EXTRA_DIAGONAL
-     &                              Kuz(i,j,k,bi,bj),
+     &       Kuz(i,j,k,bi,bj)*NONDIMENSIONALISE(i,j,k,bi,bj),
 #else                   
-     &                              0.0D0,
+     &       0.0D0,
 #endif
-     &		                    Kwx(i,j,k,bi,bj),
-     &				    Kwz(i,j,k,bi,bj))
+     &       Kwx(i,j,k,bi,bj)*NONDIMENSIONALISE(i,j,k,bi,bj),
+     &	     Kwz(i,j,k,bi,bj)*NONDIMENSIONALISE(i,j,k,bi,bj))
      
                 IF ( includeAdvec_Homog ) THEN
                  a = delR(k)/delX(i)
@@ -914,16 +916,23 @@ C               this MAXDIFF stuff should go in bathy_homog_diagnostics eventual
                  ENDDO
                 ENDDO
  
+C               ND = 0 => bathy homog disabled
+                IF (NONDIMENSIONALISE(i,j,k,bi,bj) .NE. 0.0D0) THEN           
 C               update horizontal and vertical diffusion
 C               wrt to ORIGINAL coordinates 
 C               (a b) -> (d -c)
 C               (c d) -> (-b a)
      		Kux(i,j,k,bi,bj) = Kgbar(2,2)
+     &	                         / NONDIMENSIONALISE(i,j,k,bi,bj)
 #ifdef GM_EXTRA_DIAGONAL
      		Kuz(i,j,k,bi,bj) = -Kgbar(2,1)
+     &		                 / NONDIMENSIONALISE(i,j,k,bi,bj)
 #endif
-     		Kwx(i,j,k,bi,bj) = -Kgbar(1,2)
+                Kwx(i,j,k,bi,bj) = -Kgbar(1,2)
+     &                           / NONDIMENSIONALISE(i,j,k,bi,bj)
      		Kwz(i,j,k,bi,bj) = Kgbar(1,1)
+     &		                 / NONDIMENSIONALISE(i,j,k,bi,bj)
+     	        ENDIF
      	   
            ENDIF
           ENDDO

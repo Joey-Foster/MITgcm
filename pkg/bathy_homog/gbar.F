@@ -182,11 +182,11 @@ C
 C      =>   cos(2pi eta) != -K(2,2)/K(2,1) * a/pi * 1/gamma
 C      =>   | K(2,2)/K(2,1) | * a/pi * 1/gamma > 1
       
-             IF ( ABS(K(2,2)/K(2,1)) * (a/PI) * 1.0D0/gamma 
+             IF ( 10*ABS(K(2,2)/K(2,1)) * (a/PI) * 1.0D0/gamma 
      &                                     .LT. 1.0D0 ) THEN
               cosine_root = .TRUE.
               PRINT*, "cosine root=",
-     &         ABS(K(2,2)/K(2,1)) * (a/PI) * 1.0D0/gamma 
+     &         10*ABS(K(2,2)/K(2,1)) * (a/PI) * 1.0D0/gamma 
               CALL BATHY_HOMOG_CHECK( myThid )
              ELSE
               cosine_root = .FALSE.
