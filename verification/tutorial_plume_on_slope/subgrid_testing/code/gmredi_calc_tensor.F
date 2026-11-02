@@ -915,9 +915,7 @@ C               this MAXDIFF stuff should go in bathy_homog_diagnostics eventual
                   ENDIF
                  ENDDO
                 ENDDO
- 
-C               ND = 0 => bathy homog disabled
-                IF (NONDIMENSIONALISE(i,j,k,bi,bj) .NE. 0.0D0) THEN           
+         
 C               update horizontal and vertical diffusion
 C               wrt to ORIGINAL coordinates 
 C               (a b) -> (d -c)
@@ -932,7 +930,6 @@ C               (c d) -> (-b a)
      &                           / NONDIMENSIONALISE(i,j,k,bi,bj)
      		Kwz(i,j,k,bi,bj) = Kgbar(1,1)
      &		                 / NONDIMENSIONALISE(i,j,k,bi,bj)
-     	        ENDIF
      	   
            ENDIF
           ENDDO

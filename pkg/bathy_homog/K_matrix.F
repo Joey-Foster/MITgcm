@@ -25,9 +25,8 @@ C     N.B. taking delX for L in both x and z for ease of calcualtion
       IF (speed .NE. 0.0D0) THEN
        NONDIMENSIONALISE = 1.0D0 / (delX(i) * speed)
       ELSE 
-C      this should happen rarely (except perhaps the first timestep)
-C      this will kill bathy homgo package as it's equivalent to \nu = \infty
-       NONDIMENSIONALISE = 0.0D0
+C      use L/T as dimensional stand-in
+       NONDIMENSIONALISE = deltaT / (delX(i)*delR(k))
       ENDIF
       RETURN
       END
