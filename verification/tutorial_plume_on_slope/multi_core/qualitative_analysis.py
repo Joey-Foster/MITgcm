@@ -29,11 +29,14 @@ time = datasets['truth']['T'].values
 vmin = thetas['truth'].isel(T=-1).min().values
 vmax = thetas['truth'].isel(T=-1).max().values
 
+min_cutoff = 0.9 # a small % of values are much colder than the rest
+                 # which makes the colourbar unhelpful 
+
 plotting_customisation = {'cmap': 'jet',
-                          #'vmin': vmin, 
-                           'vmin': -0.08,
-                          #'vmax': vmax,
-                           'vmax': 0.005,
+                          'vmin': vmin*min_cutoff, 
+                          # 'vmin': -0.08,
+                          'vmax': vmax,
+                          # 'vmax': 0.005,
                           'add_colorbar': False
                           }
 

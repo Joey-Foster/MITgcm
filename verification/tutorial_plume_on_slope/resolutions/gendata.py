@@ -36,7 +36,7 @@ delta = 10 # (meters)
 
 is_multiscale = True
 is_coarse = False
-write_output = False
+write_output = True
 
 #%% PARAMS TO NOT CHANGE (unless you really want to)
 
@@ -139,6 +139,9 @@ def flat(i,j):
 def triangle(i,j):
     return (-H/3000 * x[i]) if x[i] <= 3000 else -H
 
+def ramp(i,j):
+    return (dmax/offset * x[i] - hdiff) if x[i] <= offset else -H
+
 d = np.zeros((nx, ny), dtype=np.float64)
 if is_multiscale:
     pert = np.zeros((nx, ny), dtype=np.float64)
@@ -148,10 +151,10 @@ for i in range(nx):
         # d[i, j] = hdiff/2 * (np.exp((x[i]-offset)/xwidth) - np.exp(-(x[i]-offset)/xwidth)) / (np.exp((x[i]-offset)/xwidth) + np.exp(-(x[i]-offset)/xwidth)) + hdiff/2 - H # alternative
         
         if not is_multiscale:
-            d[i, j] = flat(i, j)
+            d[i, j] = ramp(i, j)
         else:
             pert[i,j] = delta * np.sin(2*np.pi*x[i] / delta)
-            d[i, j] = flat(i, j) + pert[i,j]/10
+            d[i, j] = ramp(i, j) + pert[i,j]/10
 
 d[0, :] = 0.0
 
@@ -167,12 +170,13 @@ plt.show()
 
 write_binary('topog.slope', d)
 
-with open('is_multiscale.txt', 'w') as file:
-    file.write('# Reminder file saved with input data generation script\n')
-    file.write(f'{is_multiscale = }\n')
-    if is_multiscale: 
-        file.write(f'{delta = }m\n')
-        file.write(f"epsilon range: {np.max(delta/dx):.6f} to {np.min(delta/dx):.6f}\n")
+if write_output:
+    with open('is_multiscale.txt', 'w') as file:
+        file.write('# Reminder file saved with input data generation script\n')
+        file.write(f'{is_multiscale = }\n')
+        if is_multiscale: 
+            file.write(f'{delta = }m\n')
+            file.write(f"epsilon range: {np.max(delta/dx):.6f} to {np.min(delta/dx):.6f}\n")
     
 print(f"dx range: {np.min(dx):.6f} to {np.max(dx):.6f} m")
 print(f"Temperature range: {np.min(T):.6f} to {np.max(T):.6f} degC")

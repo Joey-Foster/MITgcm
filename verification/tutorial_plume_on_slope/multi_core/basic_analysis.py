@@ -41,5 +41,5 @@ ax[1].set_title('useBATHY_HOMOG=.TRUE.')
 cbar = fig.colorbar(im, ax=ax, orientation="horizontal")
 cbar.set_label(r'$\theta$ [degC]')
 plt.suptitle(rf'Potential tempertaure at $t={{ {int(time[-1])} }}$s')
-plt.savefig('comparison.pdf', bbox_inches='tight')
+plt.savefig('comparison.png', bbox_inches='tight')
 
