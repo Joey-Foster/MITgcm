@@ -219,6 +219,8 @@ if __name__ == "__main__":
                         "and without my custom package", metavar='path/to/file')
     parser.add_argument('--on', help="Path to coarse smooth bathymetry state_global.nc file "
                         "with my custom package", metavar='path/to/file')
+    parser.add_argument('--coarsen',help='coarsen the highres truth data with a given '
+                        'linear scale factor',type=int)
     
     parser.add_argument('-f', '--flux', help='Save temperature flux figure', action='store_true')
     parser.add_argument('-hc', '--heat', help='Save heat content figure', action='store_true')
@@ -235,6 +237,8 @@ if __name__ == "__main__":
     ds_truth = xr.open_dataset(args.truth, chunks={})
     ds_off = xr.open_dataset(args.off, chunks={})
     ds_on = xr.open_dataset(args.on, chunks={})
+    if args.coarsen:
+        ds_truth = ds_truth.coarsen(X=args.coarsen, Z=args.coarsen).mean()
     
     datasets = [ds_truth, ds_off, ds_on]
     times = CheckEndTimes(datasets)

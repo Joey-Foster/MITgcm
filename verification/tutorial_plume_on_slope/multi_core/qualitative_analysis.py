@@ -12,6 +12,8 @@ parser.add_argument('--off', help='file path to state_global.nc with smooth coar
 parser.add_argument('--on', help='file path to state_global.nc with smooth coarse '
                     'bathymetry and WITH my custom package', required=True)
 parser.add_argument('--png',help='save figure as png instead of pdf',action='store_true')
+parser.add_argument('--coarsen',help='coarsen the highres truth data with a given '
+                    'linear scale factor',type=int)
 args=parser.parse_args()
 
 datasets = {}
@@ -19,6 +21,8 @@ thetas = {}
 for flag, path in vars(args).items():
     if type(path) is str:
         datasets[flag] = xr.open_dataset(path, chunks={})
+        if flag == 'truth' and args.coarsen:
+            datasets[flag] = datasets[flag].coarsen(X=args.coarsen, Z=args.coarsen).mean()
         thetas[flag] = datasets[flag]['Temp'].sel(X=slice(0,3000))
 
 if len(set([datasets[flag]['T'].values[-1] for flag, path in vars(args).items() if type(path) is str])) != 1:
@@ -26,8 +30,8 @@ if len(set([datasets[flag]['T'].values[-1] for flag, path in vars(args).items() 
           'Defaulting to "highres" dataset time axis.')
 time = datasets['truth']['T'].values
 
-vmin = thetas['truth'].isel(T=-1).min().values
-vmax = thetas['truth'].isel(T=-1).max().values
+vmin = thetas['off'].isel(T=-1).min().values
+vmax = thetas['off'].isel(T=-1).max().values
 
 min_cutoff = 0.9 # a small % of values are much colder than the rest
                  # which makes the colourbar unhelpful 
