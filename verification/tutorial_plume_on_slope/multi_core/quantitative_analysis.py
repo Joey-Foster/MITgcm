@@ -43,6 +43,7 @@ def comparison_plot(times, values, legends, ylabel, title, save):
     for i, time in times.items():
         val = values[i]
         plt.plot(time, val, label=f'{legends[i]}')
+        
     if args.time_axis == 'seconds':
         plt.xlabel('Time [s]')
     elif args.time_axis =='ND_diff':
@@ -112,27 +113,29 @@ def plot_heat_content(datasets, times, X_pos):
                     f'eastward_heat_comparison_x={X_pos}')    
     
     
-def L2_norm_difference(ds1, ds2, time_idx):
-    assert ds1['Temp'].values.shape == ds2['Temp'].values.shape, "datasets don't match for L2 norm calculation"
+def L2_norm_difference(ds1, ds2, time):
+    assert ds1['Temp'].values[0,...].shape == ds2['Temp'].values[0,...].shape, "datasets don't match for L2 norm calculation"
     
-    mask =  np.logical_and(ds1['Temp'].isel(T=time_idx).values < 0, ds2['Temp'].isel(T=time_idx).values < 0)
-    ds1_masked = ds1['Temp'].isel(T=time_idx).where(mask).values.ravel()
-    ds2_masked = ds2['Temp'].isel(T=time_idx).where(mask).values.ravel()
+    mask =  np.logical_and(ds1['Temp'].sel(T=time, method='nearest').values < 0,
+                           ds2['Temp'].sel(T=time, method='nearest').values < 0)
+    ds1_masked = ds1['Temp'].sel(T=time, method='nearest').where(mask).values.ravel()
+    ds2_masked = ds2['Temp'].sel(T=time, method='nearest').where(mask).values.ravel()
     
     ds1_masked = ds1_masked[~np.isnan(ds1_masked)]
     ds2_masked = ds2_masked[~np.isnan(ds2_masked)]
     
     norm = np.linalg.norm((ds1_masked - ds2_masked), 2)
-    return norm
+    return 0 if norm == 0 else norm/len(ds1_masked)
     
-def plot_L2_norm_difference(datasets, times, lsf):
+def plot_L2_norm_difference(datasets, times):
     norms = {}
     for i in range(3):
-        norms[i] = [L2_norm_difference(datasets[i], datasets[(i+1)%3], j)
-                    for j in range(len(times[1]))]
-    legends = [r'|truth - off|$_2$', '|off - on|$_2$', '|truth - on|$_2$']
+        norms[i] = [L2_norm_difference(datasets[(i-1)%3], datasets[i], t)
+                    for t in tqdm(times[i], 
+                                  desc=f'Computing L2 norm differences for pair {i+1}/{len(datasets)}')]
+    legends = [r'|truth - on|$_2$', r'|truth - off|$_2$', r'|off - on|$_2$']
     comparison_plot(times, norms, legends, 
-                    r'$|\theta_i - \theta_j|_2$', 
+                    r'$\|\theta_i - \theta_j\|_2$', 
                     'L2 norm of pointwise differences',
                     'L2norms')
     
@@ -145,7 +148,7 @@ def temperature_flux_moving_tavg(datasets, times, X_pos, window=3):
         averaged = np.lib.stride_tricks.sliding_window_view(fluxes, window).mean(axis=1)
         if window % 2 == 0:
             time_windowed = times[i][window//2-1:-window//2] # convention to lose 1 extra point 
-                                                         # on the left for the even window
+                                                             # on the left for the even window
         else:
             time_windowed = times[i][window//2:-(window//2)]
         
@@ -241,9 +244,8 @@ if __name__ == "__main__":
     
     parser.add_argument('-f', '--flux', help='Save temperature flux figure', action='store_true')
     parser.add_argument('-hc', '--heat', help='Save heat content figure', action='store_true')
-    parser.add_argument('-L2', help='Save L2 norm of pointwise difference between pairwise runs '
-                         'by providing a linear scale factor for coarsening the "truth" dataset',
-                         type=int, metavar='LSF')
+    parser.add_argument('-L2', help='Save L2 norm of pointwise difference between pairwise runs',
+                         action='store_true')
     parser.add_argument('-taf', '--tavg-flux', help='Save time-averaged tempertaure flux '
                         'by providing the number of timesteps for the averaging window',
                         type=int, metavar='Window size')
@@ -258,12 +260,8 @@ if __name__ == "__main__":
     ds_off = xr.open_dataset(args.off, chunks={})
     ds_on = xr.open_dataset(args.on, chunks={})
     
-    if args.coarsen or args.L2:
-        if args.coarsen:
-            lsf = args.coarsen
-        else:
-            lsf = args.L2
-        ds_truth = ds_truth.coarsen(X=lsf, Z=lsf).mean()
+    if args.coarsen:
+        ds_truth = ds_truth.coarsen(X=args.coarsen, Z=args.coarsen).mean()
     
     datasets = [ds_truth, ds_off, ds_on]
     times = CheckEndTimes(datasets)
@@ -290,7 +288,10 @@ if __name__ == "__main__":
     if args.heat:
         plot_heat_content(datasets, times, 1000)
     if args.L2:
-        plot_L2_norm_difference(datasets, times, args.L2)
+        if args.coarsen is None:
+            raise Exception('Error: -L2 requires --coarsen')
+        else:
+            plot_L2_norm_difference(datasets, times)
     if args.tavg_flux:
         temperature_flux_moving_tavg(datasets, times, 1000, window=args.tavg_flux)
         
